@@ -21,12 +21,11 @@ function initFirebase() {
 }
 
 function saveToFirebase(key, value) {
-  firebaseApp.database().ref().child(key).push(value);
+  firebaseApp.database().ref(key).set(value);
 }
 
 function scanNetwork() {
   var scanDate = Date.now();
-  var dbKey = "presences"
 
   console.log("Scanning network... ", scanDate);
 
@@ -45,13 +44,13 @@ function scanNetwork() {
         continue;
       }
 
+      var presenceKey = "presences/" + macMatch[0];
       var presenceData = {
-        macAddress: macMatch[0],
         ipAddress: ipMatch[0],
-        timestamp: scanDate,
+        lastSeen: scanDate,
       };
 
-      saveToFirebase(dbKey, presenceData);
+      saveToFirebase(presenceKey, presenceData);
     }
   });
 }
@@ -59,3 +58,4 @@ function scanNetwork() {
 initFirebase();
 
 setInterval(scanNetwork, 60000);
+scanNetwork();

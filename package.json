@@ -1,0 +1,24 @@
+{
+  "name": "home-dashboard",
+  "version": "1.0.0",
+  "description": "Various scrapers & scanners with a web-based dashboard to summarize goings-on in the home.",
+  "main": "presence-scanner.js",
+  "dependencies": {
+    "express": "^4.14.0",
+    "firebase": "^3.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeffstephens/home-dashboard.git"
+  },
+  "author": "Jeff Stephens",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jeffstephens/home-dashboard/issues"
+  },
+  "homepage": "https://github.com/jeffstephens/home-dashboard#readme"
+}
