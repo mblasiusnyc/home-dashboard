@@ -8,8 +8,50 @@ function initFirebase() {
   firebase.initializeApp(firebaseConfig);
 }
 
+function firebaseUpdate(key, value) {
+  firebase.database().ref(key).update(value);
+}
+
+function updateListeners() {
+  $("button.edit-device-name").on('click', function() {
+    var friendlyName = $(this).data("friendly-name");
+    var macAddress = $(this).data("mac-address");
+    var promptMessage = null;
+
+    if (friendlyName) {
+      promptMessage = "Rename " + friendlyName;
+    } else {
+      promptMessage = "Rename " + macAddress;
+    }
+
+    var newName = prompt(promptMessage);
+
+    if (newName) {
+      nameDevice(macAddress, newName);
+    }
+  });
+
+  $("button.hide-device").on('click', function() {
+    var friendlyName = $(this).data("friendly-name");
+    var macAddress = $(this).data("mac-address");
+    var promptMessage = null;
+
+    if (friendlyName) {
+      promptMessage = "Really hide " + friendlyName + "?";
+    } else {
+      promptMessage = "Really hide " + macAddress + "?";
+    }
+
+    var reallyHide = confirm(promptMessage);
+
+    if (reallyHide) {
+      hideDevice(macAddress);
+    }
+  });
+}
+
 function watchDevices() {
-  var deviceList = firebase.database().ref('presences');
+  var deviceList = firebase.database().ref('devices');
 
   deviceList.on('value', function(snapshot) {
 
@@ -19,11 +61,9 @@ function watchDevices() {
     for (var macAddress in deviceList) {
       if (deviceList.hasOwnProperty(macAddress)) {
         var deviceInfo = deviceList[macAddress];
-
-        deviceArray.push({
-          macAddress: macAddress,
-          lastSeen: moment(deviceInfo.lastSeen).fromNow()
-        });
+        deviceInfo.macAddress = macAddress;
+        deviceInfo.lastSeen = moment(deviceInfo.lastSeen).fromNow();
+        deviceArray.push(deviceInfo);
       }
     }
 
@@ -31,7 +71,33 @@ function watchDevices() {
     var template = Handlebars.compile(templateSource);
     $("#device-container").html(template({"devices": deviceArray}));
 
+    updateListeners();
+
   });
+}
+
+function nameDevice(macAddress, newName) {
+  deviceKey = "devices/" + macAddress
+  newData = {
+    friendlyName: newName
+  };
+  firebaseUpdate(deviceKey, newData);
+}
+
+function hideDevice(macAddress) {
+  deviceKey = "devices/" + macAddress;
+  newData = {
+    hideInDashboard: true
+  };
+  firebaseUpdate(deviceKey, newData);
+}
+
+function showDevice(macAddress) {
+  deviceKey = "devices/" + macAddress;
+  newData = {
+    hideInDashboard: false
+  };
+  firebaseUpdate(deviceKey, newData);
 }
 
 initFirebase();

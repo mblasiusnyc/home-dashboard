@@ -20,8 +20,12 @@ function initFirebase() {
   firebaseApp = Firebase.initializeApp(firebaseConfig);
 }
 
-function saveToFirebase(key, value) {
+function firebaseSet(key, value) {
   firebaseApp.database().ref(key).set(value);
+}
+
+function firebaseUpdate(key, value) {
+  firebaseApp.database().ref(key).update(value);
 }
 
 function scanNetwork() {
@@ -44,18 +48,18 @@ function scanNetwork() {
         continue;
       }
 
-      var presenceKey = "presences/" + macMatch[0];
-      var presenceData = {
+      // save presence data (timestamp-only)
+      var deviceKey = "devices/" + macMatch[0];
+      var deviceData = {
         ipAddress: ipMatch[0],
         lastSeen: scanDate,
       };
-
-      saveToFirebase(presenceKey, presenceData);
+      firebaseUpdate(deviceKey, deviceData);
     }
   });
 }
 
 initFirebase();
 
-setInterval(scanNetwork, 60000);
+setInterval(scanNetwork, 10000);
 scanNetwork();
