@@ -90,6 +90,8 @@ function buildSpeedtestChart(speedtestData) {
     ]
   }
 
+  Chart.defaults.global.legend.display = false;
+
   var chartOptions = {
     type: 'line',
     data: chartData
