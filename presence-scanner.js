@@ -48,7 +48,7 @@ function scanNetwork() {
         continue;
       }
 
-      // save presence data (timestamp-only)
+      // save presence data
       var deviceKey = "devices/" + macMatch[0];
       var deviceData = {
         ipAddress: ipMatch[0],

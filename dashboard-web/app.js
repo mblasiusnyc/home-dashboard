@@ -1,3 +1,7 @@
+/**
+ * FIREBASE
+ */
+
 function initFirebase() {
   var firebaseConfig = {
     apiKey: "AIzaSyDEHc7ws4S0JeV2HuDvMMjTFqbO-TDkgd8",
@@ -12,7 +16,95 @@ function firebaseUpdate(key, value) {
   firebase.database().ref(key).update(value);
 }
 
-function updateListeners() {
+
+/**
+ * SPEED TESTS
+ */
+
+
+function watchSpeedtests() {
+  var deviceList = firebase.database().ref('speedtest-results');
+
+  deviceList.on('value', function(snapshot) {
+
+    var resultList = snapshot.val();
+    var resultArray = [];
+    var loopCounter = 0;
+    var maxDataPoints = 30;
+
+    for (var result in resultList) {
+      if (loopCounter > maxDataPoints) {
+        break;
+      }
+
+      if (resultList.hasOwnProperty(result)) {
+        resultArray.push(resultList[result]);
+        loopCounter++;
+      }
+    }
+
+    buildSpeedtestChart(resultArray);
+
+  });
+}
+
+
+function buildSpeedtestChart(speedtestData) {
+  var chartContainer = $("#network-chart-container");
+  var chartLabels = [];
+  var downloadValues = [];
+  var uploadValues = [];
+
+  // build date label for every other data point
+  for (var i = 0; i < speedtestData.length; i++) {
+    if (i % 2) {
+      var timeString = moment(speedtestData[i].timestamp).format("h:mm a");
+      chartLabels.push(timeString);
+    } else {
+      chartLabels.push("");
+    }
+  }
+
+  // build isolated list of download & upload results
+  for (var i = 0; i < speedtestData.length; i++) {
+    downloadValues.push(speedtestData[i].download);
+    uploadValues.push(speedtestData[i].upload);
+  }
+
+  var chartData = {
+    labels: chartLabels,
+    datasets: [
+      {
+        label: "Download Speed",
+        fill: false,
+        backgroundColor: '#B0D1F1',
+        borderColor: '#001429',
+        data: downloadValues
+      }, {
+        label: "Upload Speed",
+        fill: false,
+        backgroundColor: '#89C572',
+        borderColor: '#304129',
+        data: uploadValues
+      }
+    ]
+  }
+
+  var chartOptions = {
+    type: 'line',
+    data: chartData
+  };
+
+  var chart = new Chart(chartContainer, chartOptions);
+}
+
+
+/**
+ * NETWORK DEVICES
+ */
+
+
+function updateDeviceListeners() {
   $("button.edit-device-name").on('click', function() {
     var friendlyName = $(this).data("friendly-name");
     var macAddress = $(this).data("mac-address");
@@ -100,5 +192,16 @@ function showDevice(macAddress) {
   firebaseUpdate(deviceKey, newData);
 }
 
+
+/**
+ * INITIALIZATION - WHERE EVERYTHING STARTS
+ */
+
+
+function updateListeners() {
+  updateDeviceListeners();
+}
+
 initFirebase();
 watchDevices();
+watchSpeedtests();

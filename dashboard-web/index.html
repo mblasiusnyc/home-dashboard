@@ -1,6 +1,8 @@
 <!doctype html>
 <html>
   <head>
+    <link href="index.css" rel="stylesheet">
+
     <title>Home Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"> -->
@@ -10,7 +12,13 @@
   <body>
     <div class="container">
       <div class="page-header">
-        <h1>Home Dashboard</h1>
+        <h1>Network Performance</h1>
+      </div>
+
+      <canvas id="network-chart-container" width="200" height="100"></canvas>
+
+      <div class="page-header">
+        <h1>Network Devices</h1>
       </div>
 
       <div id="device-container" class="row"></div>
@@ -22,6 +30,7 @@
   <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
   <script src="handlebars.js"></script>
   <script src="moment.js"></script>
+  <script src="chart.js"></script>
   <script src="app.js"></script>
 
   <!-- HANDLEBARS TEMPLATES -->
