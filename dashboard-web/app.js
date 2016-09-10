@@ -16,6 +16,9 @@ function firebaseUpdate(key, value) {
   firebase.database().ref(key).update(value);
 }
 
+function firebasePush(parentKey, value) {
+  firebase.database().ref().child(parentKey).push(value);
+}
 
 /**
  * OCCUPANTS
@@ -37,14 +40,15 @@ function processOccupantResults(resultList) {
 
   for (var result in resultList) {
     if (resultList.hasOwnProperty(result)) {
+      resultList[result].occupantId = result;
       resultArray.push(resultList[result]);
     }
   }
 
-  updateOccupants(resultArray);
+  updateOccupantsDisplay(resultArray);
 }
 
-function updateOccupants(occupantArray) {
+function updateOccupantsDisplay(occupantArray) {
   var templateSource = $("#occupant-profile-template").html();
   var template = Handlebars.compile(templateSource);
   $('#occupant-container').html(template({"occupants": occupantArray}));
@@ -53,8 +57,42 @@ function updateOccupants(occupantArray) {
 }
 
 function updateOccupantListeners() {
-  $('.add-occupant-button').on('click', function() {
-    alert("Coming soon...");
+  $('button.add-occupant-button').on('click', function() {
+    var newOccupantName = prompt('New occupant\'s name?');
+
+    if (newOccupantName) {
+      var newOccupant = {
+        name: newOccupantName,
+      }
+
+      firebasePush('occupants', newOccupant);
+    }
+  });
+
+  $("button.edit-occupant-name").on('click', function() {
+    var occupantName = $(this).data("name");
+    var occupantId = $(this).data("occupant-id");
+
+    var newName = prompt('Rename ' + occupantName);
+
+    if (newName) {
+      var updatedOccupant = {
+        name: newName,
+      }
+
+      firebaseUpdate('occupants/' + occupantId, updatedOccupant);
+    }
+  });
+
+  $("button.remove-occupant").on('click', function() {
+    var occupantName = $(this).data("name");
+    var occupantId = $(this).data("occupant-id");
+
+    var reallyRemove = confirm('Really remove ' + occupantName + '? There is no undo.');
+
+    if (reallyRemove) {
+      firebase.database().ref().child('occupants/' + occupantId).remove();
+    }
   });
 }
 
