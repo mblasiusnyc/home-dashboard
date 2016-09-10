@@ -18,7 +18,13 @@
       <canvas id="network-chart-container" width="200" height="100"></canvas>
 
       <div class="page-header">
-        <h2>Occupants</h2>
+        <h2>
+          Occupants
+          <button class="btn btn-primary add-occupant-button pull-right">
+            <span class="glyphicon glyphicon-plus"></span>
+            Add Occupant
+          </button>
+        </h2>
       </div>
 
       <div id="occupant-container" class="row"></div>
@@ -90,7 +96,11 @@
           </div>
 
           <div class="panel-body">
-            Last seen {{lastSeen}}
+            {{#if deviceId}}
+            <code>{{deviceId}}</code>
+            {{^}}
+            <p class="text-muted text-center">No network device has been associated yet.</p>
+            {{/if}}
           </div>
         </div>
       </div>

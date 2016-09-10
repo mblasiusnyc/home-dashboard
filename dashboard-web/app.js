@@ -20,6 +20,9 @@ function firebasePush(parentKey, value) {
   firebase.database().ref().child(parentKey).push(value);
 }
 
+var deviceCache = {};
+
+
 /**
  * OCCUPANTS
  */
@@ -228,6 +231,8 @@ function watchDevices() {
   deviceList.on('value', function(snapshot) {
 
     var deviceList = snapshot.val();
+    deviceCache = deviceList;
+
     var deviceArray = [];
 
     for (var macAddress in deviceList) {

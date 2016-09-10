@@ -36,12 +36,10 @@ function createEventIfNecessary(deviceObject) {
   // 15 minutes
   var LEFT_HOME_THRESHOLD = 60 * 15;
 
-  // did someone leave home?
+  // did someone arrive home after being absent?
   // if (deviceObject.lastSeen - deviceObject.prevLastSeen > LEFT_HOME_THRESHOLD) {
 
   // }
-
-  // did someone arrive home?
 }
 
 function scanNetwork() {
