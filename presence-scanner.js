@@ -10,6 +10,8 @@ var exec = require('child_process').exec;
 var Firebase = require('firebase');
 firebaseApp = null;
 
+FIREBASE_NAMESPACE = 'devices';
+
 function initFirebase() {
   var firebaseConfig = {
     apiKey: "AIzaSyDEHc7ws4S0JeV2HuDvMMjTFqbO-TDkgd8",
@@ -25,7 +27,21 @@ function firebaseSet(key, value) {
 }
 
 function firebaseUpdate(key, value) {
+  console.log("FIREBASE UPDATE: " + key, value);
   firebaseApp.database().ref(key).update(value);
+}
+
+function createEventIfNecessary(deviceObject) {
+  // we declare that someone has left the premises if we haven't seen them in
+  // 15 minutes
+  var LEFT_HOME_THRESHOLD = 60 * 15;
+
+  // did someone leave home?
+  // if (deviceObject.lastSeen - deviceObject.prevLastSeen > LEFT_HOME_THRESHOLD) {
+
+  // }
+
+  // did someone arrive home?
 }
 
 function scanNetwork() {
@@ -37,6 +53,7 @@ function scanNetwork() {
   var ipRegex = /(?:[0-9]{1,3}\.){3}[0-9]{1,3}/;
 
   var cmd = 'sudo arp-scan -l';
+  var newDeviceData = {};
   exec(cmd, function(error, stdout, stderr) {
     var outputLines = stdout.split('\n');
 
@@ -45,17 +62,44 @@ function scanNetwork() {
       var ipMatch = outputLines[i].match(ipRegex);
 
       if (macMatch === null || ! macMatch) {
+        console.log("skipping");
         continue;
       }
 
-      // save presence data
-      var deviceKey = "devices/" + macMatch[0];
-      var deviceData = {
+      console.log("running", macMatch[0]);
+
+      var macAddress = macMatch[0];
+
+      // save timestamp of previous sighting
+      var deviceStore = firebaseApp.database().ref(FIREBASE_NAMESPACE);
+
+      newDeviceData[macAddress] = {
         ipAddress: ipMatch[0],
         lastSeen: scanDate,
+        prevLastSeen: 0,
       };
-      firebaseUpdate(deviceKey, deviceData);
     }
+
+    /**
+     * Check all our known devices, doing housekeeping & creating events
+     */
+    deviceStore.once("value", (snapshot) => {
+      var deviceListInFirebase = snapshot.val();
+
+      for (var deviceFirebaseKey in newDeviceData) {
+        if (deviceListInFirebase.hasOwnProperty(deviceFirebaseKey)) {
+          if (deviceListInFirebase[deviceFirebaseKey].hasOwnProperty('lastSeen')) {
+            // move the previous timestamp into prevLastSeen
+            newDeviceData[deviceFirebaseKey].prevLastSeen = deviceListInFirebase[deviceFirebaseKey].lastSeen;
+          }
+        }
+
+        createEventIfNecessary(newDeviceData);
+
+        var updateKey = FIREBASE_NAMESPACE + '/' + deviceFirebaseKey;
+        firebaseUpdate(updateKey, newDeviceData[deviceFirebaseKey]);
+      }
+    });
   });
 }
 

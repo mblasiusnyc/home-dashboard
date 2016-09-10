@@ -18,36 +18,74 @@ function firebaseUpdate(key, value) {
 
 
 /**
+ * OCCUPANTS
+ */
+
+
+function initOccupants() {
+  var occupantList = firebase.database().ref('occupants');
+
+  // keep the graph up-to-date with new speedtests as they're performed
+  occupantList.on('value', function(snapshot) {
+    var resultList = snapshot.val();
+    processOccupantResults(resultList);
+  });
+}
+
+function processOccupantResults(resultList) {
+  var resultArray = [];
+
+  for (var result in resultList) {
+    if (resultList.hasOwnProperty(result)) {
+      resultArray.push(resultList[result]);
+    }
+  }
+
+  updateOccupants(resultArray);
+}
+
+function updateOccupants(occupantArray) {
+  var templateSource = $("#occupant-profile-template").html();
+  var template = Handlebars.compile(templateSource);
+  $('#occupant-container').html(template({"occupants": occupantArray}));
+
+  updateOccupantListeners();
+}
+
+function updateOccupantListeners() {
+  $('.add-occupant-button').on('click', function() {
+    alert("Coming soon...");
+  });
+}
+
+
+/**
  * SPEED TESTS
  */
 
 
-function watchSpeedtests() {
+function initSpeedtests() {
   var deviceList = firebase.database().ref('speedtest-results');
 
+  // keep the graph up-to-date with new speedtests as they're performed
   deviceList.on('value', function(snapshot) {
-
     var resultList = snapshot.val();
-    var resultArray = [];
-    var loopCounter = 0;
-    var maxDataPoints = 30;
-
-    for (var result in resultList) {
-      if (loopCounter > maxDataPoints) {
-        break;
-      }
-
-      if (resultList.hasOwnProperty(result)) {
-        resultArray.push(resultList[result]);
-        loopCounter++;
-      }
-    }
-
-    buildSpeedtestChart(resultArray);
-
+    processSpeedtestResults(resultList);
   });
 }
 
+function processSpeedtestResults(resultList) {
+  var resultArray = [];
+
+  for (var result in resultList) {
+    if (resultList.hasOwnProperty(result)) {
+      resultArray.push(resultList[result]);
+    }
+  }
+
+  resultArray = resultArray.splice(-30);
+  buildSpeedtestChart(resultArray);
+}
 
 function buildSpeedtestChart(speedtestData) {
   var chartContainer = $("#network-chart-container");
@@ -65,7 +103,7 @@ function buildSpeedtestChart(speedtestData) {
     }
   }
 
-  // build isolated list of download & upload results
+  // build isolated list of download & upload results for graphing
   for (var i = 0; i < speedtestData.length; i++) {
     downloadValues.push(speedtestData[i].download);
     uploadValues.push(speedtestData[i].upload);
@@ -79,12 +117,14 @@ function buildSpeedtestChart(speedtestData) {
         fill: false,
         backgroundColor: '#B0D1F1',
         borderColor: '#001429',
+        pointRadius: 0,
         data: downloadValues
       }, {
         label: "Upload Speed",
         fill: false,
         backgroundColor: '#89C572',
         borderColor: '#304129',
+        pointRadius: 0,
         data: uploadValues
       }
     ]
@@ -165,7 +205,7 @@ function watchDevices() {
     var template = Handlebars.compile(templateSource);
     $("#device-container").html(template({"devices": deviceArray}));
 
-    updateListeners();
+    updateDeviceListeners();
 
   });
 }
@@ -202,8 +242,10 @@ function showDevice(macAddress) {
 
 function updateListeners() {
   updateDeviceListeners();
+  updateOccupantListeners();
 }
 
 initFirebase();
 watchDevices();
-watchSpeedtests();
+initSpeedtests();
+initOccupants();
