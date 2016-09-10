@@ -20,7 +20,7 @@
       <div class="page-header">
         <h2>
           Occupants
-          <button class="btn btn-primary add-occupant-button pull-right">
+          <button class="btn btn-default add-occupant-button pull-right">
             <span class="glyphicon glyphicon-plus"></span>
             Add Occupant
           </button>
@@ -97,9 +97,23 @@
 
           <div class="panel-body">
             {{#if deviceId}}
-            <code>{{deviceId}}</code>
+              <code>{{deviceId}}</code>
             {{^}}
-            <p class="text-muted text-center">No network device has been associated yet.</p>
+              <p class="text-info text-center">
+                <b>Choose a device that {{name}} always carries.</b>
+                <br>
+                When we see this device, we'll know {{name}} is home.
+              </p>
+              <br>
+              <p class="text-center">
+                <div class="input-group">
+                  <span class="input-group-addon" id="associate-addon-{{occupantId}}">
+                    <span class="glyphicon glyphicon-link"></span>
+                    Choose Device
+                  </span>
+                  <input type="text" class="form-control" placeholder="{{name}}'s iPhone" aria-describedby="associate-addon-{{occupantId}}">
+                </div>
+              </p>
             {{/if}}
           </div>
         </div>
@@ -109,11 +123,14 @@
     {{#if occupants}}
     {{^}}
       <div class="col-md-offset-2 col-md-8 no-occupants-message">
-        <p class="lead">
+        <p class="lead text-center">
           No occupants are being tracked yet.
         </p>
-        <p>
-          <button class="btn btn-primary add-occupant-button"><span class="glyphicon glyphicon-plus"></span> Add Occupant</button>
+        <p class="text-center">
+          <button class="btn btn-primary add-occupant-button">
+            <span class="glyphicon glyphicon-plus"></span>
+            Add Occupant
+          </button>
         </p>
       </div>
     {{/if}}

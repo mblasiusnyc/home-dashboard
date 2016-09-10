@@ -60,6 +60,7 @@ function updateOccupantsDisplay(occupantArray) {
 }
 
 function updateOccupantListeners() {
+  $('button.add-occupant-button').off('click');
   $('button.add-occupant-button').on('click', function() {
     var newOccupantName = prompt('New occupant\'s name?');
 
