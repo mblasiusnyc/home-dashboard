@@ -13,6 +13,7 @@ function initFirebase() {
 }
 
 function firebaseUpdate(key, value) {
+  console.log("Updating firebase " + key, value);
   firebase.database().ref(key).update(value);
 }
 
@@ -41,9 +42,29 @@ function initOccupants() {
 function processOccupantResults(resultList) {
   var resultArray = [];
 
-  for (var result in resultList) {
+  for (let result in resultList) {
     if (resultList.hasOwnProperty(result)) {
       resultList[result].occupantId = result;
+
+      // look up device name if one is associated
+      if (resultList[result].hasOwnProperty('deviceId')) {
+        var associatedDeviceId = resultList[result].deviceId;
+        var associatedDevice = deviceCache[associatedDeviceId];
+
+        if (associatedDevice.hasOwnProperty('friendlyName')) {
+          resultList[result].deviceName = associatedDevice.friendlyName;
+        } else {
+          resultList[result].deviceName = associatedDevice.macAddress;
+        }
+
+        // determine whether this user is home or not
+        var LEFT_HOME_THRESHOLD = 60 * 15 * 1000;
+        console.log("Diff: ", Date.now() - associatedDevice.rawLastSeen, LEFT_HOME_THRESHOLD);
+        if (Date.now() - associatedDevice.rawLastSeen < LEFT_HOME_THRESHOLD) {
+          resultList[result].presenceHome = true;
+        }
+      }
+
       resultArray.push(resultList[result]);
     }
   }
@@ -97,6 +118,40 @@ function updateOccupantListeners() {
     if (reallyRemove) {
       firebase.database().ref().child('occupants/' + occupantId).remove();
     }
+  });
+
+  $(".device-search").on('keyup', function() {
+    var keyword = $(this).val();
+    var occupantId = $(this).data('occupant-id');
+    var resultsContainer = $('.device-results-container[data-occupant-id="' + occupantId + '"]');
+
+    if ( ! keyword || keyword.length === 0) {
+      resultsContainer.html('');
+      return;
+    }
+
+    var templateSource = $("#device-search-template").html();
+    var template = Handlebars.compile(templateSource);
+
+    var matches = searchDeviceCache(keyword);
+    resultsContainer.html(template({"matches": matches}));
+
+    updateDeviceSearchListeners(occupantId);
+  });
+}
+
+function updateDeviceSearchListeners(occupantId) {
+  var resultsContainer = $('.device-results-container[data-occupant-id="' + occupantId + '"] .device-search-result');
+
+  resultsContainer.off('click');
+  resultsContainer.on('click', function() {
+    updateDeviceForOccupant(occupantId, $(this).data('device-id'));
+  });
+}
+
+function updateDeviceForOccupant(occupantId, deviceId) {
+  firebaseUpdate('occupants/' + occupantId, {
+    'deviceId': deviceId
   });
 }
 
@@ -236,10 +291,11 @@ function watchDevices() {
 
     var deviceArray = [];
 
-    for (var macAddress in deviceList) {
+    for (let macAddress in deviceList) {
       if (deviceList.hasOwnProperty(macAddress)) {
         var deviceInfo = deviceList[macAddress];
         deviceInfo.macAddress = macAddress;
+        deviceInfo.rawLastSeen = deviceInfo.lastSeen;
         deviceInfo.lastSeen = moment(deviceInfo.lastSeen).fromNow();
         deviceArray.push(deviceInfo);
       }
@@ -278,6 +334,35 @@ function showDevice(macAddress) {
   firebaseUpdate(deviceKey, newData);
 }
 
+function searchDeviceCache(keyword) {
+  var matches = [];
+
+  keyword = keyword.toLowerCase().trim();
+  var searchRegex = new RegExp('.*' + keyword + '.*', "gi");
+
+  for (let device in deviceCache) {
+    // ignore hidden devices
+    if (deviceCache[device].hideInDashboard) {
+      continue;
+    }
+
+    deviceCache[device].deviceId = device;
+
+    if (deviceCache[device].hasOwnProperty('friendlyName')) {
+      if (deviceCache[device].friendlyName.match(searchRegex)) {
+        matches.push(deviceCache[device]);
+        continue;
+      }
+    }
+
+    if (deviceCache[device].macAddress.match(searchRegex)) {
+      matches.push(deviceCache[device]);
+    }
+  }
+
+  return matches;
+}
+
 
 /**
  * INITIALIZATION - WHERE EVERYTHING STARTS
@@ -291,5 +376,5 @@ function updateListeners() {
 
 initFirebase();
 watchDevices();
-initSpeedtests();
+// initSpeedtests();
 initOccupants();
