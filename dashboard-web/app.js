@@ -42,7 +42,7 @@ function initOccupants() {
 function processOccupantResults(resultList) {
   var resultArray = [];
 
-  for (let result in resultList) {
+  for (var result in resultList) {
     if (resultList.hasOwnProperty(result)) {
       resultList[result].occupantId = result;
 
@@ -59,7 +59,7 @@ function processOccupantResults(resultList) {
 
         // determine whether this user is home or not
         var LEFT_HOME_THRESHOLD = 60 * 15 * 1000;
-        console.log("Diff: ", Date.now() - associatedDevice.rawLastSeen, LEFT_HOME_THRESHOLD);
+
         if (Date.now() - associatedDevice.rawLastSeen < LEFT_HOME_THRESHOLD) {
           resultList[result].presenceHome = true;
         }
@@ -291,7 +291,7 @@ function watchDevices() {
 
     var deviceArray = [];
 
-    for (let macAddress in deviceList) {
+    for (var macAddress in deviceList) {
       if (deviceList.hasOwnProperty(macAddress)) {
         var deviceInfo = deviceList[macAddress];
         deviceInfo.macAddress = macAddress;
@@ -340,7 +340,7 @@ function searchDeviceCache(keyword) {
   keyword = keyword.toLowerCase().trim();
   var searchRegex = new RegExp('.*' + keyword + '.*', "gi");
 
-  for (let device in deviceCache) {
+  for (var device in deviceCache) {
     // ignore hidden devices
     if (deviceCache[device].hideInDashboard) {
       continue;
