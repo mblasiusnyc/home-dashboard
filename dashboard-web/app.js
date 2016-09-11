@@ -22,6 +22,7 @@ function firebasePush(parentKey, value) {
 }
 
 var deviceCache = {};
+var occupantCache = {};
 
 
 /**
@@ -39,6 +40,16 @@ function initOccupants() {
   });
 }
 
+function forceRefreshOccupants() {
+  var occupantList = firebase.database().ref('occupants');
+
+  // keep the graph up-to-date with new speedtests as they're performed
+  occupantList.once('value', function(snapshot) {
+    var resultList = snapshot.val();
+    processOccupantResults(resultList);
+  });
+}
+
 function processOccupantResults(resultList) {
   var resultArray = [];
 
@@ -46,11 +57,12 @@ function processOccupantResults(resultList) {
     if (resultList.hasOwnProperty(result)) {
       resultList[result].occupantId = result;
 
-      // look up device name if one is associated
+      // if a device is associated, cross-reference some data
       if (resultList[result].hasOwnProperty('deviceId')) {
         var associatedDeviceId = resultList[result].deviceId;
         var associatedDevice = deviceCache[associatedDeviceId];
 
+        // fetch the device name, falling back to its MAC address
         if (associatedDevice.hasOwnProperty('friendlyName')) {
           resultList[result].deviceName = associatedDevice.friendlyName;
         } else {
@@ -59,7 +71,6 @@ function processOccupantResults(resultList) {
 
         // determine whether this user is home or not
         var LEFT_HOME_THRESHOLD = 60 * 15 * 1000;
-
         if (Date.now() - associatedDevice.rawLastSeen < LEFT_HOME_THRESHOLD) {
           resultList[result].presenceHome = true;
         }
@@ -69,6 +80,7 @@ function processOccupantResults(resultList) {
     }
   }
 
+  occupantCache = resultArray;
   updateOccupantsDisplay(resultArray);
 }
 
@@ -306,6 +318,7 @@ function watchDevices() {
     $("#device-container").html(template({"devices": deviceArray}));
 
     updateDeviceListeners();
+    forceRefreshOccupants();
 
   });
 }
@@ -365,6 +378,33 @@ function searchDeviceCache(keyword) {
 
 
 /**
+ * AUTHENTICATION
+ */
+
+function initAuth() {
+  firebase.auth().onAuthStateChanged(function(user) {
+    if ( ! user) {
+      window.location.href="/login.html";
+    }
+  });
+}
+
+
+/**
+ * UI
+ */
+
+
+function initUI() {
+  $('#signout').on('click', function(event) {
+    event.preventDefault();
+
+    firebase.auth().signOut();
+  });
+}
+
+
+/**
  * INITIALIZATION - WHERE EVERYTHING STARTS
  */
 
@@ -375,6 +415,8 @@ function updateListeners() {
 }
 
 initFirebase();
+initAuth();
+initUI();
 watchDevices();
 // initSpeedtests();
 initOccupants();
