@@ -167,59 +167,12 @@ function updateDeviceForOccupant(occupantId, deviceId) {
   });
 }
 
-
-/**
- * NETWORK DEVICES
- */
-
-
-function updateDeviceListeners() {
-  $("button.edit-device-name").on('click', function() {
-    var friendlyName = $(this).data("friendly-name");
-    var macAddress = $(this).data("mac-address");
-    var promptMessage = null;
-
-    if (friendlyName) {
-      promptMessage = "Rename " + friendlyName;
-    } else {
-      promptMessage = "Rename " + macAddress;
-    }
-
-    var newName = prompt(promptMessage);
-
-    if (newName) {
-      nameDevice(macAddress, newName);
-    }
-  });
-
-  $("button.hide-device").on('click', function() {
-    var friendlyName = $(this).data("friendly-name");
-    var macAddress = $(this).data("mac-address");
-    var promptMessage = null;
-
-    if (friendlyName) {
-      promptMessage = "Really hide " + friendlyName + "?";
-    } else {
-      promptMessage = "Really hide " + macAddress + "?";
-    }
-
-    var reallyHide = confirm(promptMessage);
-
-    if (reallyHide) {
-      hideDevice(macAddress);
-    }
-  });
-}
-
 function watchDevices() {
   var deviceList = firebase.database().ref('devices');
 
   deviceList.on('value', function(snapshot) {
 
     var deviceList = snapshot.val();
-    deviceCache = deviceList;
-
-    var deviceArray = [];
 
     for (var macAddress in deviceList) {
       if (deviceList.hasOwnProperty(macAddress)) {
@@ -227,71 +180,13 @@ function watchDevices() {
         deviceInfo.macAddress = macAddress;
         deviceInfo.rawLastSeen = deviceInfo.lastSeen;
         deviceInfo.lastSeen = moment(deviceInfo.lastSeen).fromNow();
-        deviceArray.push(deviceInfo);
       }
     }
 
-    var templateSource = $("#device-profile-template").html();
-    var template = Handlebars.compile(templateSource);
-    $("#device-container").html(template({"devices": deviceArray}));
-
-    updateDeviceListeners();
+    deviceCache = deviceList;
     forceRefreshOccupants();
 
   });
-}
-
-function nameDevice(macAddress, newName) {
-  deviceKey = "devices/" + macAddress
-  newData = {
-    friendlyName: newName
-  };
-  firebaseUpdate(deviceKey, newData);
-}
-
-function hideDevice(macAddress) {
-  deviceKey = "devices/" + macAddress;
-  newData = {
-    hideInDashboard: true
-  };
-  firebaseUpdate(deviceKey, newData);
-}
-
-function showDevice(macAddress) {
-  deviceKey = "devices/" + macAddress;
-  newData = {
-    hideInDashboard: false
-  };
-  firebaseUpdate(deviceKey, newData);
-}
-
-function searchDeviceCache(keyword) {
-  var matches = [];
-
-  keyword = keyword.toLowerCase().trim();
-  var searchRegex = new RegExp('.*' + keyword + '.*', "gi");
-
-  for (var device in deviceCache) {
-    // ignore hidden devices
-    if (deviceCache[device].hideInDashboard) {
-      continue;
-    }
-
-    deviceCache[device].deviceId = device;
-
-    if (deviceCache[device].hasOwnProperty('friendlyName')) {
-      if (deviceCache[device].friendlyName.match(searchRegex)) {
-        matches.push(deviceCache[device]);
-        continue;
-      }
-    }
-
-    if (deviceCache[device].macAddress.match(searchRegex)) {
-      matches.push(deviceCache[device]);
-    }
-  }
-
-  return matches;
 }
 
 
@@ -316,7 +211,6 @@ function initAuth() {
 function initUI() {
   $('#signout').on('click', function(event) {
     event.preventDefault();
-
     firebase.auth().signOut();
   });
 }
@@ -336,5 +230,3 @@ initFirebase();
 initAuth();
 initUI();
 watchDevices();
-// initSpeedtests();
-initOccupants();

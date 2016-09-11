@@ -96,9 +96,23 @@ function buildSpeedtestChart(speedtestData) {
 
 
 /**
+ * UI
+ */
+
+
+function initUI() {
+  $('#signout').on('click', function(event) {
+    event.preventDefault();
+    firebase.auth().signOut();
+  });
+}
+
+
+/**
  * INITIALIZATION - WHERE EVERYTHING STARTS
  */
 
 
  initFirebase();
+ initUI();
  initSpeedtests();
