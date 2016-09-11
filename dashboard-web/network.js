@@ -96,6 +96,19 @@ function buildSpeedtestChart(speedtestData) {
 
 
 /**
+ * AUTHENTICATION
+ */
+
+function initAuth() {
+  firebase.auth().onAuthStateChanged(function(user) {
+    if ( ! user) {
+      window.location.href="/login.html";
+    }
+  });
+}
+
+
+/**
  * UI
  */
 
@@ -114,5 +127,6 @@ function initUI() {
 
 
  initFirebase();
+ initAuth();
  initUI();
  initSpeedtests();
