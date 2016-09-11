@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+    <link href="index.css" rel="stylesheet">
+
+    <title>Home Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"> -->
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  </head>
+  <body>
+    <div class="container">
+      <ol class="breadcrumb">
+        <li>
+          <a href="/">
+            <span class="glyphicon glyphicon-th-large"></span>
+            Home Dashboard
+          </a>
+        </li>
+        <li class="active">
+          <span class="glyphicon glyphicon-stats"></span>
+          Network Performance
+        </li>
+        <li>
+          <a href="#">
+            <span class="glyphicon glyphicon-cog"></span>
+            Settings
+          </a>
+        </li>
+        <li class="pull-right">
+          <a href="#" id="signout">
+            <span class="glyphicon glyphicon-log-out"></span>
+            Sign Out
+          </a>
+        </li>
+      </ol>
+
+      <div class="page-header">
+        <h2>
+          Network Performance
+        </h2>
+      </div>
+
+      <div class="col-md-12">
+        <canvas id="network-chart-container" width="200" height="100"></canvas>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase.js"></script>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+    <script src="moment.js"></script>
+    <script src="chart.js"></script>
+    <script src="network.js""></script>
+  </body>
+</html>
