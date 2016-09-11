@@ -40,6 +40,13 @@
         </h2>
       </div>
 
+      <p class="lead">
+        These devices will be continously monitored and can be associated with
+        a person to help track when that person is at home.
+      </p>
+
+      <br>
+
       <div id="shown-device-container" class="clearfix"></div>
 
       <div class="page-header clearfix">
@@ -48,6 +55,13 @@
           Hidden Devices
         </h2>
       </div>
+
+      <p class="lead">
+        These devices are hidden from view. Commonly hidden devices include
+        routers, streaming boxes, and desktop computers.
+      </p>
+
+      <br>
 
       <div id="hidden-device-container" class="clearfix"></div>
     </div>
@@ -80,7 +94,7 @@
                   </button>
                 {{^}}
                   <button type="button" class="btn btn-default btn-xs hide-device" aria-label="Hide Device" data-mac-address="{{macAddress}}" data-friendly-name="{{friendlyName}}">
-                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                    <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
                   </button>
                 {{/if}}
 
