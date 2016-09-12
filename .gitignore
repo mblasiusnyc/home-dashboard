@@ -38,3 +38,4 @@ jspm_packages
 
 nohup.out
 .DS_Store
+service-account-creds.json
