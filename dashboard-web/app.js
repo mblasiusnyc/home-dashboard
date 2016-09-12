@@ -70,7 +70,7 @@ function processOccupantResults(resultList) {
         }
 
         // determine whether this user is home or not
-        var LEFT_HOME_THRESHOLD = 60 * 15 * 1000;
+        var LEFT_HOME_THRESHOLD = 60 * 10 * 1000;
         if (Date.now() - associatedDevice.rawLastSeen < LEFT_HOME_THRESHOLD) {
           resultList[result].presenceHome = true;
         }
