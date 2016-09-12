@@ -1,9 +1,17 @@
+// AUTHENTICATED USERS ONLY (Probably Good):
+//
 {
   "rules": {
-    ".read": "true",
-    ".write": "true"
+    ".read": "auth.uid !== null",
+    ".write": "auth.uid !== null"
   }
 }
 
-//".read": "auth.uid !== null",
-//    ".write": "auth.uid !== null"
+// READ/WRITE TO THE WORLD (Probably Bad):
+//
+// {
+//   "rules": {
+//     ".read": "true",
+//     ".write": "true"
+//   }
+// }
