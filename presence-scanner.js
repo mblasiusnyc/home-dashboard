@@ -13,11 +13,9 @@ firebaseApp = null;
 FIREBASE_NAMESPACE = 'devices';
 
 function initFirebase() {
-  var firebaseConfig = {
-    apiKey: "AIzaSyDEHc7ws4S0JeV2HuDvMMjTFqbO-TDkgd8",
-    authDomain: "home-dashboard-9604a.firebaseapp.com",
+  firebaseConfig = {
+    serviceAccount: "service-account-creds.json",
     databaseURL: "https://home-dashboard-9604a.firebaseio.com",
-    storageBucket: "home-dashboard-9604a.appspot.com",
   };
   firebaseApp = Firebase.initializeApp(firebaseConfig);
 }
