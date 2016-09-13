@@ -74,6 +74,8 @@ function processOccupantResults(resultList) {
         if (Date.now() - associatedDevice.rawLastSeen < LEFT_HOME_THRESHOLD) {
           resultList[result].presenceHome = true;
         }
+
+        resultList[result].lastSeen = associatedDevice.lastSeen;
       }
 
       resultArray.push(resultList[result]);
