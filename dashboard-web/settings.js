@@ -142,39 +142,11 @@ function showDevice(macAddress) {
   firebaseUpdate(deviceKey, newData);
 }
 
-function searchDeviceCache(keyword) {
-  var matches = [];
-
-  keyword = keyword.toLowerCase().trim();
-  var searchRegex = new RegExp('.*' + keyword + '.*', "gi");
-
-  for (var device in deviceCache) {
-    // ignore hidden devices
-    if (deviceCache[device].hideInDashboard) {
-      continue;
-    }
-
-    deviceCache[device].deviceId = device;
-
-    if (deviceCache[device].hasOwnProperty('friendlyName')) {
-      if (deviceCache[device].friendlyName.match(searchRegex)) {
-        matches.push(deviceCache[device]);
-        continue;
-      }
-    }
-
-    if (deviceCache[device].macAddress.match(searchRegex)) {
-      matches.push(deviceCache[device]);
-    }
-  }
-
-  return matches;
-}
-
 
 /**
  * AUTHENTICATION
  */
+
 
 function initAuth() {
   firebase.auth().onAuthStateChanged(function(user) {
