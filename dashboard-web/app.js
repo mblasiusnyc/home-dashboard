@@ -116,6 +116,11 @@ function processOccupantResults(resultList) {
 }
 
 function updateOccupantsDisplay(occupantArray) {
+  // abort if the user is currently mapping a device to an occupant
+  if ($(".device-search:focus").length) {
+    return;
+  }
+
   var templateSource = $("#occupant-profile-template").html();
   var template = Handlebars.compile(templateSource);
   $('#occupant-container').html(template({"occupants": occupantArray}));
