@@ -16,6 +16,8 @@ var speedTest = require('speedtest-net');
 var Firebase = require('firebase');
 firebaseApp = null;
 
+FIREBASE_NAMESPACE = 'speedtest-results';
+
 function initFirebase() {
   firebaseConfig = {
     serviceAccount: "service-account-creds.json",
@@ -25,6 +27,7 @@ function initFirebase() {
 }
 
 function firebaseSet(key, value) {
+  console.log ("setting " + key + " to ", value);
   firebaseApp.database().ref(key).set(value);
 }
 
@@ -73,7 +76,6 @@ function performAndRecordTest() {
 }
 
 function recordTest(download, upload, ping) {
-  var speedtestKey = "speedtest-results";
   var speedtestData = {
     download: download,
     upload: upload,
@@ -81,14 +83,45 @@ function recordTest(download, upload, ping) {
     timestamp: Date.now(),
   };
 
-  console.log("Data: ", speedtestData);
+  // console.log("Data: ", speedtestData);
 
-  firebasePush(speedtestKey, speedtestData);
+  firebasePush(FIREBASE_NAMESPACE, speedtestData);
+}
 
-  setTimeout(function() {
-    process.exit();
-  }, 10000);
+function cleanUpTests() {
+  var oneWeek = 60 * 60 * 24 * 7 * 1000;
+  var now = Math.round(new Date().getTime());
+  var oneWeekAgo = now - oneWeek;
+
+  console.log("now: ", now);
+  console.log("one week of ms: ", oneWeekAgo);
+  console.log("finding results between 0 and " + oneWeekAgo);
+
+  firebaseApp.database().ref(FIREBASE_NAMESPACE).
+    orderByChild('timestamp').
+    startAt(0).
+    endAt(oneWeekAgo).
+    once('value', function(snapshot) {
+      console.log("Removing " + Object.keys(snapshot.val()).length + " records");
+
+      var dataToRemove = snapshot.val();
+      var dataKeys = Object.keys(dataToRemove);
+
+      var updates = {};
+
+      for (let i = 0; i < dataKeys.length; i++) {
+        let recordKey = dataKeys[i];
+        updates[FIREBASE_NAMESPACE + "/" + recordKey] = null;
+      }
+
+      return firebaseApp.database().ref().update(updates);
+    });
 }
 
 initFirebase();
 performAndRecordTest();
+cleanUpTests();
+
+setTimeout(function() {
+  process.exit();
+}, 10000);
