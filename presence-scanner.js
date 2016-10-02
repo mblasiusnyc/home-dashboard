@@ -32,7 +32,7 @@ function firebaseUpdate(key, value) {
 function createEventIfNecessary(deviceObject) {
   // we declare that someone has left the premises if we haven't seen them in
   // 15 minutes
-  var LEFT_HOME_THRESHOLD = 60 * 15;
+  var LEFT_HOME_THRESHOLD = 60 * 10 * 1000;
 
   // did someone arrive home after being absent?
   // if (deviceObject.lastSeen - deviceObject.prevLastSeen > LEFT_HOME_THRESHOLD) {

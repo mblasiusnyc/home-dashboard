@@ -55,13 +55,44 @@ function initUIListeners() {
     var password = $('#password').val();
 
     firebase.auth().signInWithEmailAndPassword(email, password).catch(function (error) {
-      console.debug(error);
       var errorType = error.code;
       var errorMessage = null;
 
       switch (errorType) {
         case 'auth/user-not-found':
         case 'auth/wrong-password':
+        case 'auth/user-disabled':
+          errorMessage = 'No user was found with those credentials.';
+          break;
+
+        case 'auth/invalid-email':
+          errorMessage = 'That email address doesn\'t look right.';
+          break;
+
+        default:
+          errorMessage = 'Something went wrong... try again in a few minutes.';
+      }
+
+      showError(errorMessage);
+    });
+  });
+
+  $("#reset-form").on('submit', function(event) {
+    event.preventDefault();
+    $("#error-container").html('');
+
+    var email = $("#reset-email").val();
+
+    firebase.auth().sendPasswordResetEmail(email)
+      .then(function() {
+        showSuccess('Check your email to finish resetting your password.');
+      })
+      .catch(function (error) {
+      var errorType = error.code;
+      var errorMessage = null;
+
+      switch (errorType) {
+        case 'auth/user-not-found':
           errorMessage = 'No user was found with those credentials.';
           break;
 
@@ -82,6 +113,12 @@ function showError(errorMessage) {
   var templateSource = $("#form-error-template").html();
   var template = Handlebars.compile(templateSource);
   $('#error-container').html(template({"errorMessage": errorMessage}));
+}
+
+function showSuccess(message) {
+  var templateSource = $("#form-success-template").html();
+  var template = Handlebars.compile(templateSource);
+  $('#success-container').html(template({"message": message}));
 }
 
 

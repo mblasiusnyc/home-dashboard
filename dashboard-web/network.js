@@ -22,7 +22,7 @@ function initSpeedtests() {
   var deviceList = firebase.database().ref('speedtest-results');
 
   // keep the graph up-to-date with new speedtests as they're performed
-  deviceList.on('value', function(snapshot) {
+  deviceList.limitToLast(30).on('value', function(snapshot) {
     var resultList = snapshot.val();
     processSpeedtestResults(resultList);
   });
@@ -37,7 +37,6 @@ function processSpeedtestResults(resultList) {
     }
   }
 
-  resultArray = resultArray.splice(-30);
   buildSpeedtestChart(resultArray);
 }
 

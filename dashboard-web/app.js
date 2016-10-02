@@ -24,6 +24,35 @@ function firebasePush(parentKey, value) {
 var deviceCache = {};
 var occupantCache = {};
 
+function searchDeviceCache(keyword) {
+  var matches = [];
+
+  keyword = keyword.toLowerCase().trim();
+  var searchRegex = new RegExp('.*' + keyword + '.*', "gi");
+
+  for (var device in deviceCache) {
+    // ignore hidden devices
+    if (deviceCache[device].hideInDashboard) {
+      continue;
+    }
+
+    deviceCache[device].deviceId = device;
+
+    if (deviceCache[device].hasOwnProperty('friendlyName')) {
+      if (deviceCache[device].friendlyName.match(searchRegex)) {
+        matches.push(deviceCache[device]);
+        continue;
+      }
+    }
+
+    if (deviceCache[device].macAddress.match(searchRegex)) {
+      matches.push(deviceCache[device]);
+    }
+  }
+
+  return matches;
+}
+
 
 /**
  * OCCUPANTS
@@ -70,10 +99,12 @@ function processOccupantResults(resultList) {
         }
 
         // determine whether this user is home or not
-        var LEFT_HOME_THRESHOLD = 60 * 15 * 1000;
+        var LEFT_HOME_THRESHOLD = 60 * 10 * 1000;
         if (Date.now() - associatedDevice.rawLastSeen < LEFT_HOME_THRESHOLD) {
           resultList[result].presenceHome = true;
         }
+
+        resultList[result].lastSeen = associatedDevice.lastSeen;
       }
 
       resultArray.push(resultList[result]);
@@ -85,6 +116,11 @@ function processOccupantResults(resultList) {
 }
 
 function updateOccupantsDisplay(occupantArray) {
+  // abort if the user is currently mapping a device to an occupant
+  if ($(".device-search:focus").length) {
+    return;
+  }
+
   var templateSource = $("#occupant-profile-template").html();
   var template = Handlebars.compile(templateSource);
   $('#occupant-container').html(template({"occupants": occupantArray}));
