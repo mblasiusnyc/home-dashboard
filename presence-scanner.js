@@ -33,27 +33,18 @@ function firebaseUpdate(key, value) {
   firebaseApp.database().ref(key).update(value);
 }
 
-function createEventIfNecessary(deviceObject) {
-  // we declare that someone has left the premises if we haven't seen them in
-  // 15 minutes
-  var LEFT_HOME_THRESHOLD = 60 * 10 * 1000;
-
-  // did someone arrive home after being absent?
-  // if (deviceObject.lastSeen - deviceObject.prevLastSeen > LEFT_HOME_THRESHOLD) {
-
-  // }
-}
-
 function scanNetwork() {
-  var scanDate = Date.now();
+  console.log("scanning");
 
-  console.log("Scanning network... ", scanDate);
+  var scanDate = Date.now();
 
   var macRegex = /(\w{2}:\w{2}:\w{2}:\w{2}:\w{2}:\w{2})/;
   var ipRegex = /(?:[0-9]{1,3}\.){3}[0-9]{1,3}/;
 
   var cmd = 'sudo arp-scan -l';
   var newDeviceData = {};
+  var lastKnownDeviceList = {};
+
   exec(cmd, function(error, stdout, stderr) {
     var outputLines = stdout.split('\n');
 
@@ -62,43 +53,72 @@ function scanNetwork() {
       var ipMatch = outputLines[i].match(ipRegex);
 
       if (macMatch === null || ! macMatch) {
-        console.log("skipping");
         continue;
       }
 
-      console.log("running", macMatch[0]);
-
       var macAddress = macMatch[0];
-
-      // save timestamp of previous sighting
-      var deviceStore = firebaseApp.database().ref(FIREBASE_NAMESPACE);
 
       newDeviceData[macAddress] = {
         ipAddress: ipMatch[0],
         lastSeen: scanDate,
-        prevLastSeen: 0,
       };
     }
 
     /**
      * Check all our known devices, doing housekeeping & creating events
      */
-    deviceStore.once("value", (snapshot) => {
-      var deviceListInFirebase = snapshot.val();
+    var devicesRef = firebaseApp.database().ref('devices');
+    devicesRef.transaction( (deviceListInFirebase) => {
+      if (deviceListInFirebase) {
 
-      for (var deviceFirebaseKey in newDeviceData) {
-        if (deviceListInFirebase.hasOwnProperty(deviceFirebaseKey)) {
-          if (deviceListInFirebase[deviceFirebaseKey].hasOwnProperty('lastSeen')) {
-            // move the previous timestamp into prevLastSeen
-            newDeviceData[deviceFirebaseKey].prevLastSeen = deviceListInFirebase[deviceFirebaseKey].lastSeen;
-          }
+        // iterate over list of updated devices, then commit those updates
+        for (var deviceFirebaseKey in newDeviceData) {
+          deviceListInFirebase[deviceFirebaseKey] = newDeviceData[deviceFirebaseKey];
         }
 
-        createEventIfNecessary(newDeviceData);
+        lastKnownDeviceList = deviceListInFirebase;
+        return deviceListInFirebase;
 
-        var updateKey = FIREBASE_NAMESPACE + '/' + deviceFirebaseKey;
-        firebaseUpdate(updateKey, newDeviceData[deviceFirebaseKey]);
+      } else {
+        // seed the key with some dummy data. this is probably not best practice...
+        return { "initialized": 1 };
       }
+
+    }).then( () => {
+      occupantsRef = firebaseApp.database().ref('occupants');
+
+      occupantsRef.transaction( (occupants) => {
+        if (occupants) {
+
+          // update presence state for each occupant
+          for (var occupantKey in occupants) {
+            var thisOccupant = occupants[occupantKey];
+
+            if (lastKnownDeviceList.hasOwnProperty(thisOccupant.deviceId)) {
+              var associatedDevice = lastKnownDeviceList[thisOccupant.deviceId];
+
+              // we declare that someone has left the premises if we haven't seen them in
+              // 15 minutes
+              var LEFT_HOME_THRESHOLD = 60 * 10 * 1000;
+
+              if (Date.now() - associatedDevice.lastSeen < LEFT_HOME_THRESHOLD) {
+                // device is online
+                thisOccupant.status = "home";
+              } else {
+                // device is offline
+                thisOccupant.status = "away";
+              }
+
+            }
+          }
+
+          return occupants;
+
+        } else {
+          // seed the key with some dummy data. this is probably not best practice...
+          return { "initialized" : 1 }
+        }
+      })
     });
   });
 }
