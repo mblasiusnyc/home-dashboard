@@ -6,18 +6,22 @@
  */
 
 var exec = require('child_process').exec;
-
-var Firebase = require('firebase');
+var FirebaseAdmin = require('firebase-admin');
 firebaseApp = null;
 
 FIREBASE_NAMESPACE = 'devices';
 
 function initFirebase() {
-  firebaseConfig = {
-    serviceAccount: "service-account-creds.json",
-    databaseURL: "https://home-dashboard-9604a.firebaseio.com",
+  var serviceAccount = require("./service-account-creds.json");
+
+  var dbURL = "https://home-dashboard-9604a.firebaseio.com";
+  // var dbURL = "https://homebase-dev.firebaseio.com";
+
+  var firebaseConfig = {
+    credential: FirebaseAdmin.credential.cert(serviceAccount),
+    databaseURL: dbURL,
   };
-  firebaseApp = Firebase.initializeApp(firebaseConfig);
+  firebaseApp = FirebaseAdmin.initializeApp(firebaseConfig);
 }
 
 function firebaseSet(key, value) {

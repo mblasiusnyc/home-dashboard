@@ -5,6 +5,7 @@
   "main": "presence-scanner.js",
   "dependencies": {
     "firebase": "^3.3.0",
+    "firebase-admin": "^4.0.4",
     "speedtest-net": "^1.2.7"
   },
   "devDependencies": {},
