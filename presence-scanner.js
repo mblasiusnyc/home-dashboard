@@ -152,8 +152,8 @@ function scanNetwork() {
               let associatedDevice = lastKnownDeviceList[thisOccupant.deviceId];
 
               // we declare that someone has left the premises if we haven't seen them in
-              // 12 minutes
-              let LEFT_HOME_THRESHOLD = 60 * 12 * 1000;
+              // 15 minutes
+              let LEFT_HOME_THRESHOLD = 60 * 15 * 1000;
 
               let oldStatus = { "status": thisOccupant.status };
 
