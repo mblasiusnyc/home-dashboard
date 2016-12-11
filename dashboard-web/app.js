@@ -98,14 +98,11 @@ function processOccupantResults(resultList) {
           resultList[result].deviceName = associatedDevice.macAddress;
         }
 
-        // determine whether this user is home or not
-        var LEFT_HOME_THRESHOLD = 60 * 10 * 1000;
-        if (Date.now() - associatedDevice.rawLastSeen < LEFT_HOME_THRESHOLD) {
-          resultList[result].presenceHome = true;
-        }
-
         resultList[result].lastSeen = associatedDevice.lastSeen;
       }
+
+      resultList[result].statusHome = resultList[result].status == "home";
+      resultList[result].statusAway = resultList[result].status == "away";
 
       resultArray.push(resultList[result]);
     }
