@@ -96,15 +96,17 @@ function scanNetwork() {
         if (occupants) {
 
           // update presence state for each occupant
-          for (var occupantKey in occupants) {
-            var thisOccupant = occupants[occupantKey];
+          for (let occupantKey in occupants) {
+            let thisOccupant = occupants[occupantKey];
 
             if (lastKnownDeviceList.hasOwnProperty(thisOccupant.deviceId)) {
-              var associatedDevice = lastKnownDeviceList[thisOccupant.deviceId];
+              let associatedDevice = lastKnownDeviceList[thisOccupant.deviceId];
 
               // we declare that someone has left the premises if we haven't seen them in
               // 15 minutes
-              var LEFT_HOME_THRESHOLD = 60 * 10 * 1000;
+              let LEFT_HOME_THRESHOLD = 60 * 10 * 1000;
+
+              let oldStatus = { "status": thisOccupant.status };
 
               if (Date.now() - associatedDevice.lastSeen < LEFT_HOME_THRESHOLD) {
                 // device is online
@@ -114,6 +116,26 @@ function scanNetwork() {
                 thisOccupant.status = "away";
               }
 
+              // log event for when an occupant changes state
+              if (thisOccupant.status != oldStatus.status) {
+                let eventTypes = {
+                  home: "arrivedHome",
+                  away: "leftHome",
+                };
+                let eventType = "unknown";
+
+                if (eventTypes.hasOwnProperty(thisOccupant.status)) {
+                  eventType = eventTypes[thisOccupant.status];
+                }
+
+                let newEvent = {
+                  occupantId: occupantKey,
+                  timestamp: Date.now(),
+                  type: eventType,
+                };
+
+                firebaseApp.database().ref('events').push(newEvent);
+              }
             }
           }
 
