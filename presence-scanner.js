@@ -45,16 +45,16 @@ function sendEventNotifications(newEvent, occupant) {
 
   if (newEvent.type == "arrivedHome") {
     subject = occupant.name + " arrived at home.";
-    contentText = "Hey there!\n\nJust a heads up that " + occupant.name + " arrived safely at home.\n\n\n\nCheers!\n\n-The Homebase Team";
+    contentText = "Hey there!\n\nJust a heads up that " + occupant.name + " arrived safely at home.\n\n\n\-Homebase";
   } else if (newEvent.type == "leftHome") {
     subject = occupant.name + " left home.";
-    contentText = "Hey there!\n\nJust a heads up that " + occupant.name + " left home.\n\n\n\nCheers!\n\n-The Homebase Team";
+    contentText = "Hey there!\n\nJust a heads up that " + occupant.name + " left home.\n\n\n\-Homebase";
   } else {
     console.error("Unrecognized event type: " + newEvent.type + " - not sending a notification.");
     return;
   }
 
-  var from_email = new SendGridHelper.Email('notify@homedashboard.me', 'Homebase Notifications');
+  var from_email = new SendGridHelper.Email('notify@homedashboard.me', 'Homebase');
   var to_email = new SendGridHelper.Email('jefftheman45@gmail.com', 'Jeff Stephens');
   var content = new SendGridHelper.Content('text/plain', contentText);
 
