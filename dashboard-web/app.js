@@ -62,7 +62,6 @@ function searchDeviceCache(keyword) {
 function initOccupants() {
   var occupantList = firebase.database().ref('occupants');
 
-  // keep the graph up-to-date with new speedtests as they're performed
   occupantList.on('value', function(snapshot) {
     var resultList = snapshot.val();
     processOccupantResults(resultList);
@@ -72,7 +71,6 @@ function initOccupants() {
 function forceRefreshOccupants() {
   var occupantList = firebase.database().ref('occupants');
 
-  // keep the graph up-to-date with new speedtests as they're performed
   occupantList.on('value', function(snapshot) {
     var resultList = snapshot.val();
     processOccupantResults(resultList);

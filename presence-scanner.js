@@ -14,8 +14,8 @@ FIREBASE_NAMESPACE = 'devices';
 function initFirebase() {
   var serviceAccount = require("./service-account-creds.json");
 
-  var dbURL = "https://home-dashboard-9604a.firebaseio.com";
-  // var dbURL = "https://homebase-dev.firebaseio.com";
+  // var dbURL = "https://home-dashboard-9604a.firebaseio.com";
+  var dbURL = "https://homebase-dev.firebaseio.com";
 
   var firebaseConfig = {
     credential: FirebaseAdmin.credential.cert(serviceAccount),
