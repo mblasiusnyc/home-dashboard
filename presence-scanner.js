@@ -7,6 +7,9 @@
 
 var exec = require('child_process').exec;
 var FirebaseAdmin = require('firebase-admin');
+var SendGridHelper = require('sendgrid').mail;
+require('dotenv').config();
+
 firebaseApp = null;
 
 FIREBASE_NAMESPACE = 'devices';
@@ -31,6 +34,52 @@ function firebaseSet(key, value) {
 function firebaseUpdate(key, value) {
   console.log("FIREBASE UPDATE: " + key, value);
   firebaseApp.database().ref(key).update(value);
+}
+
+function sendEventNotifications(newEvent, occupant) {
+  // for now just email Jeff with things
+  // TODO: add system for users to subscribe to notifications
+
+  let subject = "";
+  let contentText = "";
+
+  if (newEvent.type == "arrivedHome") {
+    subject = occupant.name + " arrived at home.";
+    contentText = "Hey there!\n\nJust a heads up that " + occupant.name + " arrived safely at home.\n\n\n\nCheers!\n\n-The Homebase Team";
+  } else if (newEvent.type == "leftHome") {
+    subject = occupant.name + " left home.";
+    contentText = "Hey there!\n\nJust a heads up that " + occupant.name + " left home.\n\n\n\nCheers!\n\n-The Homebase Team";
+  } else {
+    console.error("Unrecognized event type: " + newEvent.type + " - not sending a notification.");
+    return;
+  }
+
+  var from_email = new SendGridHelper.Email('notify@homedashboard.me', 'Homebase Notifications');
+  var to_email = new SendGridHelper.Email('jefftheman45@gmail.com', 'Jeff Stephens');
+  var content = new SendGridHelper.Content('text/plain', contentText);
+
+  var mail = new SendGridHelper.Mail();
+  var personalization = new SendGridHelper.Personalization();
+
+  personalization.addTo(to_email);
+
+  mail.setFrom(from_email);
+  mail.setSubject(subject);
+  mail.addContent(content);
+  mail.addPersonalization(personalization);
+
+  var sg = require('sendgrid')(process.env.SENDGRID_API_KEY);
+  var request = sg.emptyRequest({
+    method: 'POST',
+    path: '/v3/mail/send',
+    body: mail.toJSON(),
+  });
+
+  sg.API(request, function(error, response) {
+    console.log(response.statusCode);
+    console.log(response.body);
+    console.log(response.headers);
+  });
 }
 
 function scanNetwork() {
@@ -133,6 +182,8 @@ function scanNetwork() {
                   timestamp: Date.now(),
                   type: eventType,
                 };
+
+                sendEventNotifications(newEvent, thisOccupant);
 
                 firebaseApp.database().ref('events').push(newEvent);
               }

@@ -4,8 +4,10 @@
   "description": "Various scrapers & scanners with a web-based dashboard to summarize goings-on in the home.",
   "main": "presence-scanner.js",
   "dependencies": {
+    "dotenv": "^2.0.0",
     "firebase": "^3.3.0",
     "firebase-admin": "^4.0.4",
+    "sendgrid": "^4.7.1",
     "speedtest-net": "^1.2.7"
   },
   "devDependencies": {},
