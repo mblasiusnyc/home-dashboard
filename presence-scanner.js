@@ -73,7 +73,12 @@ function scanNetwork() {
 
         // iterate over list of updated devices, then commit those updates
         for (var deviceFirebaseKey in newDeviceData) {
-          deviceListInFirebase[deviceFirebaseKey] = newDeviceData[deviceFirebaseKey];
+          // merge if already exists
+          if (deviceListInFirebase.hasOwnProperty(deviceFirebaseKey)) {
+            Object.assign(deviceListInFirebase[deviceFirebaseKey], newDeviceData[deviceFirebaseKey]);
+          } else {
+            deviceListInFirebase[deviceFirebaseKey] = newDeviceData[deviceFirebaseKey];
+          }
         }
 
         lastKnownDeviceList = deviceListInFirebase;
