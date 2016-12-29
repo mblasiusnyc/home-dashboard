@@ -173,6 +173,11 @@ function scanNetwork() {
           }
         }
 
+        // remove dummy data
+        if (deviceListInFirebase.hasOwnProperty("initialized")) {
+          delete deviceListInFirebase.initialized;
+        }
+
         lastKnownDeviceList = deviceListInFirebase;
         return deviceListInFirebase;
 
