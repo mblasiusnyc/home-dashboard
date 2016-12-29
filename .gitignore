@@ -40,3 +40,4 @@ nohup.out
 .DS_Store
 service-account-creds.json
 .env
+deviceConfig.json

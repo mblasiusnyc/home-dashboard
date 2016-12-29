@@ -65,7 +65,7 @@ function initApp() {
 
         firebaseApp.database().ref("scanners/" + deviceConfig.deviceId).transaction( (remoteDeviceConfig) => {
           if (remoteDeviceConfig) {
-            remoteDeviceConfig["ipAddress"] = bodyObject.ip;
+            remoteDeviceConfig["ipAddress"] = bodyObject.ip.trim();
             return remoteDeviceConfig;
           }
         });

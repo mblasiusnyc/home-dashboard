@@ -2,14 +2,38 @@
 //
 {
   "rules": {
-    ".read": "auth.uid !== null",
-    ".write": "auth.uid !== null",
-
     "events": {
-      ".indexOn": ["timestamp"]
+      ".indexOn": ["timestamp"],
+      ".read": "auth !== null && auth.uid !== null",
+      ".write": "auth !== null && auth.uid !== null"
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth.uid === $uid",
+        ".write": "auth.uid === $uid"
+      }
+    },
+    "devices": {
+      ".read": "auth !== null && auth.uid !== null",
+      ".write": "auth !== null && auth.uid !== null"
+    },
+    "occupants": {
+      ".read": "auth !== null && auth.uid !== null",
+      ".write": "auth !== null && auth.uid !== null"
+    },
+    "places": {
+      ".read": "auth !== null && auth.uid !== null",
+      ".write": "auth !== null && auth.uid !== null"
+    },
+    "scanners": {
+      ".indexOn": ["ipAddress"],
+      ".read": "auth !== null && auth.uid !== null",
+      ".write": "auth !== null && auth.uid !== null"
     }
   }
 }
+
+        // ".read": "auth !== null && auth.uid !== null && data.child('users').child(auth.uid).exists()",
 
 // READ/WRITE TO THE WORLD (Probably Bad):
 //

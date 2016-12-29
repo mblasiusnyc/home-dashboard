@@ -1,3 +1,5 @@
+USER_INITIALIZED = false;
+
 /**
  * FIREBASE
  */
@@ -31,8 +33,39 @@ function initAuth() {
   // if we're logged in, skip this page
   firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
+      prepareUserdataOrLogin(user);
+    }
+  });
+}
+
+function prepareUserdataOrLogin(user) {
+  // prevent a TON of callbacks being executed after initializing the user object once
+  if (USER_INITIALIZED) {
+    window.location.href="/";
+    return;
+  }
+
+  var userDataRef = firebase.database().ref("users").child(user.uid);
+
+  userDataRef.transaction(function(userData) {
+    // initialize our userData object if necessary
+    if (userData === null || ! userData) {
+      console.debug("userdata is null, initializing it");
+      userData = {};
+    }
+
+    if ( ! userData.hasOwnProperty("placeBeingManaged")) {
+      userData["placeBeingManaged"] = 0;
+      USER_INITIALIZED = true;
+      return userData;
+    } else {
+      console.debug("User is good, logging in");
       window.location.href="/";
     }
+
+    return;
+  }, function() {
+    prepareUserdataOrLogin(user);
   });
 }
 
@@ -43,8 +76,6 @@ function initAuth() {
 
 
 function initUIListeners() {
-  console.log("form: ", $("#login-form"));
-
   $('#login-form').on('submit', function(event) {
     event.preventDefault();
     $("#error-container").html('');
