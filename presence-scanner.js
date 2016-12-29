@@ -159,7 +159,7 @@ function scanNetwork() {
     /**
      * Check all our known devices, doing housekeeping & creating events
      */
-    var devicesRef = firebaseApp.database().ref('devices');
+    var devicesRef = firebaseApp.database().ref('devices').child(deviceConfig.deviceId);
     devicesRef.transaction( (deviceListInFirebase) => {
       if (deviceListInFirebase) {
 
