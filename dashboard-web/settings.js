@@ -57,14 +57,11 @@ function showSelectPlaceFlow() {
   var placeTemplate = _.template(templateSource);
   $("#content").html(placeTemplate());
 
-  var placeList = null;
-
   // list places we're allowed to see
   listenedLocations.push("userPlaceMap");
   firebase.database().ref("userPlaceMap").child(USER_ID).on("value", function(placesSnapshot) {
-    placeList = placesSnapshot.val();
-
-    console.log("placeList: ", placeList);
+    var placeList = placesSnapshot.val();
+    var devicesFoundCount = 0;
 
     if (placeList) {
       _.each(placeList, function(place, placeId) {
@@ -85,15 +82,20 @@ function showSelectPlaceFlow() {
 
             addPlaceListing(thisDeviceInfo, true);
             updatePlacesListeners();
+            devicesFoundCount++;
           }
+
+          findLocalScanners(devicesFoundCount);
         });
       });
     }
+
   }, function(err) {
     console.error("Failed to look up userPlaceMap", err);
   });
+}
 
-
+function findLocalScanners(numDevicesFound) {
   /* Three options:
    *
    * No device on the network of any kind - display instructions to set up a device
@@ -145,11 +147,13 @@ function showSelectPlaceFlow() {
           // no scanners matching this IP address
           console.debug("No nearby devices found");
 
-          var thisDeviceInfo = {
-            "noDevicesFound": true,
-          };
+          if (numDevicesFound === 0) {
+            var thisDeviceInfo = {
+              "noDevicesFound": true,
+            };
 
-          addPlaceListing(thisDeviceInfo);
+            addPlaceListing(thisDeviceInfo);
+          }
         }
       }, function(err) {
         console.error("Failed to list scanners by IP address", err);
