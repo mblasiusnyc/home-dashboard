@@ -8,7 +8,8 @@
     "firebase": "^3.3.0",
     "firebase-admin": "^4.0.4",
     "sendgrid": "^4.7.1",
-    "speedtest-net": "^1.2.7"
+    "speedtest-net": "^1.2.7",
+    "then-request": "^2.2.0"
   },
   "devDependencies": {},
   "scripts": {

@@ -6,11 +6,14 @@
  */
 
 var exec = require('child_process').exec;
+var fs = require('fs');
+var request = require('then-request');
 var FirebaseAdmin = require('firebase-admin');
 var SendGridHelper = require('sendgrid').mail;
 require('dotenv').config();
 
 firebaseApp = null;
+deviceConfig = {};
 
 FIREBASE_NAMESPACE = 'devices';
 
@@ -35,6 +38,46 @@ function firebaseUpdate(key, value) {
   console.log("FIREBASE UPDATE: " + key, value);
   firebaseApp.database().ref(key).update(value);
 }
+
+
+
+function initApp() {
+  let deviceConfigFile = "deviceConfig.json";
+
+  if ( ! fs.existsSync(deviceConfigFile)) {
+    let deviceId = firebaseApp.database().ref("/scanners").push({"dateRegistered": Date.now()}).key;
+    console.log("new deviceId: ", deviceId);
+
+    let deviceConfig = {
+      "deviceId": deviceId,
+    };
+
+    fs.writeFileSync(deviceConfigFile, JSON.stringify(deviceConfig));
+  }
+
+  deviceConfig = JSON.parse(fs.readFileSync(deviceConfigFile));
+  console.log("deviceConfig: ", deviceConfig);
+
+  return request('GET', 'https://api.ipify.org?format=json')
+    .then((res) => {
+      if (res.statusCode == 200) {
+        bodyObject = JSON.parse(res.body);
+
+        firebaseApp.database().ref("scanners/" + deviceConfig.deviceId).transaction( (remoteDeviceConfig) => {
+          if (remoteDeviceConfig) {
+            remoteDeviceConfig["ipAddress"] = bodyObject.ip;
+            return remoteDeviceConfig;
+          }
+        });
+      } else {
+        console.log("Failed to look up IP address", res.statusCode);
+      }
+
+      return Promise.resolve();
+    });
+}
+
+
 
 function sendEventNotifications(newEvent, occupant) {
   // for now just email Jeff with things
@@ -202,6 +245,7 @@ function scanNetwork() {
 }
 
 initFirebase();
-
-setInterval(scanNetwork, 10000);
-scanNetwork();
+initApp().then( () => {
+  setInterval(scanNetwork, 10000);
+  scanNetwork();
+});
