@@ -161,20 +161,18 @@
       <% } %>
     </script>
     <script id="failed-to-locate-template" type="text/x-handlebars-template">
-      <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-          <div class="panel panel-danger">
-            <div class="panel-heading">
-              <h3 class="panel-title">
-                <span class="glyphicon glyphicon-warning-sign"></span>
-                We couldn't determine your IP address.
-              </h3>
-            </div>
-            <div class="panel-body">
-              <p class="text-center text-danger">We need to know your IP address to check if there's a Homebase scanner on your network.
-              <br><br>
-              Try disabling your ad blocker temporarily or using a different device.</p>
-            </div>
+      <div class="col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading text-center">
+            <h3 class="panel-title">
+              <span class="glyphicon glyphicon-warning-sign"></span>
+              We couldn't determine your IP address.
+            </h3>
+          </div>
+          <div class="panel-body">
+            <p class="text-center text-warning">We need to know your IP address to look for Homebase scanners on your network.
+            <br>
+            Try disabling your ad blocker temporarily or using a different device.</p>
           </div>
         </div>
       </div>

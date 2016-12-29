@@ -32,11 +32,20 @@ function setManagedPlace(newPlaceId) {
 
 
 
-function addPlaceListing(deviceInfo) {
+function addPlaceListing(deviceInfo, prepend) {
+  if (typeof prepend == "undefined") {
+    prepend = false;
+  }
+
   // populate page structure
   var placeListSource = $("#place-list-template").html();
   var placeListTemplate = _.template(placeListSource);
-  $("#place-list-container").append(placeListTemplate({"deviceInfo": deviceInfo}));
+
+  if (prepend) {
+    $("#place-list-container").prepend(placeListTemplate({"deviceInfo": deviceInfo}));
+  } else {
+    $("#place-list-container").append(placeListTemplate({"deviceInfo": deviceInfo}));
+  }
   updatePlacesListeners();
 }
 
@@ -70,7 +79,7 @@ function showSelectPlaceFlow() {
               "placeName": singlePlace.name
             };
 
-            addPlaceListing(thisDeviceInfo);
+            addPlaceListing(thisDeviceInfo, true);
             updatePlacesListeners();
           }
         });
