@@ -98,7 +98,7 @@ function sendEventNotifications(newEvent, occupant) {
   }
 
   var from_email = new SendGridHelper.Email('notify@homedashboard.me', 'Homebase');
-  var to_email = new SendGridHelper.Email('jefftheman45@gmail.com', 'Jeff Stephens');
+  var to_email = new SendGridHelper.Email(process.env.ADMIN_EMAIL, process.env.ADMIN_NAME);
   var content = new SendGridHelper.Content('text/plain', contentText);
 
   var mail = new SendGridHelper.Mail();
