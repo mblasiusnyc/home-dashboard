@@ -76,7 +76,8 @@ function showSelectPlaceFlow() {
 
             var thisDeviceInfo = {
               "deviceFound": true,
-              "placeName": singlePlace.name
+              "placeName": singlePlace.name,
+              "placeId": placeId
             };
 
             addPlaceListing(thisDeviceInfo, true);
