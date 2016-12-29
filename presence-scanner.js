@@ -45,7 +45,7 @@ function initApp() {
   let deviceConfigFile = "deviceConfig.json";
 
   if ( ! fs.existsSync(deviceConfigFile)) {
-    let deviceId = firebaseApp.database().ref("/scanners").push({"initialized": true}).key;
+    let deviceId = firebaseApp.database().ref("/scanners").push({"dateRegistered": Date.now()}).key;
     console.log("new deviceId: ", deviceId);
 
     let deviceConfig = {
@@ -65,7 +65,7 @@ function initApp() {
 
         firebaseApp.database().ref("scanners/" + deviceConfig.deviceId).transaction( (remoteDeviceConfig) => {
           if (remoteDeviceConfig) {
-            remoteDeviceConfig = bodyObject.ip;
+            remoteDeviceConfig["ipAddress"] = bodyObject.ip;
             return remoteDeviceConfig;
           }
         });
