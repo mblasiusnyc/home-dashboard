@@ -1,6 +1,8 @@
 USER_ID = null;
 USER_PROFILE = null;
 
+listenedLocations = [];
+
 /**
  * FIREBASE
  */
@@ -58,6 +60,7 @@ function showSelectPlaceFlow() {
   var placeList = null;
 
   // list places we're allowed to see
+  listenedLocations.push("userPlaceMap");
   firebase.database().ref("userPlaceMap").child(USER_ID).on("value", function(placesSnapshot) {
     placeList = placesSnapshot.val();
 
@@ -260,13 +263,15 @@ function updateDeviceListeners() {
 function watchDevices() {
   var place = null;
 
-  console.log("Attempting to manage", "places/" + USER_PROFILE["placeBeingManaged"]);
-
   firebase.database().ref("places/" + USER_PROFILE["placeBeingManaged"]).once("value", function(snapshot) {
     place = snapshot.val();
 
     if (place) {
-      firebase.database().ref('devices').on('value', function(snapshot) {
+      var scannerId = place.scannerId;
+      var devicePath = 'devices/' + scannerId;
+      listenedLocations.push(devicePath);
+
+      firebase.database().ref(devicePath).on('value', function(snapshot) {
         var deviceList = snapshot.val();
         deviceCache = deviceList;
 
@@ -389,8 +394,11 @@ function initUI() {
 }
 
 function cleanupListeners() {
-  firebase.database().ref("devices").off();
-  firebase.database().ref("userPlaceMap").off();
+  _.each(listenedLocations, function(location) {
+    firebase.database().ref(location).off();
+  });
+
+  listenedLocations = [];
 }
 
 function initSettingsFlow() {
