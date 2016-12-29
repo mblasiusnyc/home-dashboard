@@ -21,9 +21,17 @@
       ".read": "auth !== null && auth.uid !== null",
       ".write": "auth !== null && auth.uid !== null"
     },
+    "userPlaceMap": {
+      "$uid": {
+        ".read": "auth !== null && auth.uid !== null && $uid === auth.uid",
+        ".write": "auth !== null && auth.uid !== null && $uid === auth.uid"
+      }
+    },
     "places": {
-      ".read": "auth !== null && auth.uid !== null",
-      ".write": "auth !== null && auth.uid !== null"
+      "$placeId" : {
+        ".read": "auth !== null && auth.uid !== null && data.child('users').child(auth.uid).exists()",
+        ".write": "auth !== null && auth.uid !== null && !data.exists()" // allow creation of new places
+      }
     },
     "scanners": {
       ".indexOn": ["ipAddress"],

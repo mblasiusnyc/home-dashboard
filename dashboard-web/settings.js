@@ -32,11 +32,11 @@ function setManagedPlace(newPlaceId) {
 
 
 
-function showSetupPlaceFlow(places, noDevicesReason) {
+function addPlaceListing(deviceInfo) {
   // populate page structure
   var placeListSource = $("#place-list-template").html();
   var placeListTemplate = _.template(placeListSource);
-  $("#place-list-container").html(placeListTemplate({"places": places, "noDevicesReason": noDevicesReason}));
+  $("#place-list-container").append(placeListTemplate({"deviceInfo": deviceInfo}));
   updatePlacesListeners();
 }
 
@@ -48,79 +48,105 @@ function showSelectPlaceFlow() {
 
   var placeList = null;
 
-  firebase.database().ref("places").on("value", function(placesSnapshot) {
+  // list places we're allowed to see
+  firebase.database().ref("userPlaceMap").child(USER_ID).on("value", function(placesSnapshot) {
     placeList = placesSnapshot.val();
 
+    console.log("placeList: ", placeList);
+
     if (placeList) {
-      // populate page structure
-      var placeListSource = $("#place-list-template").html();
-      var placeListTemplate = _.template(placeListSource);
-      $("#place-list-container").html(placeListTemplate({"places": placeList}));
+      _.each(placeList, function(place, placeId) {
+        console.debug("looking up ", "places/" + placeId);
+        firebase.database().ref("places/" + placeId).once("value", function(singlePlaceSnapshot) {
+          var singlePlace = singlePlaceSnapshot.val();
 
-      updatePlacesListeners();
-    } else {
-      /* Three options:
-       *
-       * No device on the network of any kind - display instructions to set up a device
-       * Device on the network that's already in use - user can join Place
-       * Unclaimed device on the network - display UI to initialize it
-      */
+          if (singlePlace) {
+            // populate page structure
+            var placeListSource = $("#place-list-template").html();
+            var placeListTemplate = _.template(placeListSource);
 
-      // get IP address
-      $.getJSON("//api.ipify.org?format=json")
-        .done(function(result) {
-          placeList = {};
-          var ipAddress = result.ip.trim();
+            var thisDeviceInfo = {
+              "deviceFound": true,
+              "placeName": singlePlace.name
+            };
 
-          var noDevicesReason = {
-            "noDevicesFound": false,
-            "claimedDeviceAvailable": false,
-            "unclaimedDeviceAvailable": false
-          };
+            addPlaceListing(thisDeviceInfo);
+            updatePlacesListeners();
+          }
+        });
+      });
+    }
+  }, function(err) {
+    console.error("Failed to look up userPlaceMap", err);
+  });
 
-          // look up scanners with the same IP address
-          firebase.database().ref("/scanners").orderByChild("ipAddress").equalTo(ipAddress).once("value", function(scannerSnapshot) {
-            var nearbyScanners = scannerSnapshot.val();
 
-            // TODO: handle multiple active scanners on the same network
+  /* Three options:
+   *
+   * No device on the network of any kind - display instructions to set up a device
+   * Device on the network that's already in use - must be invited
+   * Unclaimed device on the network - display UI to initialize it
+  */
 
-            if (nearbyScanners && scannerSnapshot.key) {
-              // look up places attached to this scanner
-              firebase.database().ref("/places").orderByChild("scannerId").equalTo(scannerSnapshot.key).once("value", function(placeSnapshot) {
-                // place exists attached to this scanner
-                var nearbyClaimedScanners = placeSnapshot.val();
+  // get IP address to check for scanners on the same network
+  $.getJSON("//api.ipify.org?format=json")
+    .done(function(result) {
+      var ipAddress = result.ip.trim();
 
-                if (nearbyClaimedScanners) {
-                  console.log("claimedDeviceAvailable");
-                  noDevicesReason.claimedDeviceAvailable = true;
-                  noDevicesReason["deviceId"] = Object.keys(nearbyClaimedScanners)[0];
+      // look up scanners with the same IP address
+      firebase.database().ref("scanners").orderByChild("ipAddress").equalTo(ipAddress).once("value", function(scannerSnapshot) {
+        var nearbyScanners = scannerSnapshot.val();
 
-                  showSetupPlaceFlow(placeList, noDevicesReason);
+        if (nearbyScanners) {
+          _.each(nearbyScanners, function(scanner, scannerId) {
+            if (scanner.hasOwnProperty("placeId")) {
+              // place attached to this scanner
+
+              // is it a place we have access to? if so, we are already showing the device outright
+              firebase.database().ref("userPlaceMap").child(USER_ID).child(scanner.placeId).once("value", function(userPlaceMapSnapshot) {
+                if ( ! userPlaceMapSnapshot.exists()) {
+                  console.debug("Nearby device exists, but it's already associated to a place.");
+                  var thisDeviceInfo = {
+                    "claimedDeviceAvailable": true,
+                    "deviceId": _.clone(scannerId)
+                  };
+
+                  addPlaceListing(thisDeviceInfo);
                 } else {
-                  // no places attached to this scanner
-                  console.log("unclaimedDeviceAvailable");
-                  noDevicesReason.unclaimedDeviceAvailable = true;
-                  noDevicesReason["deviceId"] = Object.keys(nearbyScanners)[0];
-
-                  showSetupPlaceFlow(placeList, noDevicesReason);
+                  console.debug("Ignoring nearby device with a place because we have full access to it.");
                 }
               });
             } else {
-              // no scanners matching this IP address
-              console.log("noDevicesFound");
-              noDevicesReason.noDevicesFound = true;
+              // no places attached to this scanner
+              console.debug("Nearby device exists with no place association!");
 
-              showSetupPlaceFlow(placeList, noDevicesReason);
+              var thisDeviceInfo = {
+                "unclaimedDeviceAvailable": true,
+                "deviceId": _.clone(scannerId)
+              };
+
+              addPlaceListing(thisDeviceInfo);
             }
           });
-        })
-        .fail(function() {
-          var failedToLocateSource = $("#failed-to-locate-template").html();
-          var failedToLocateTemplate = _.template(failedToLocateSource);
-          $("#place-list-container").html(failedToLocateTemplate());
-        });
-    }
-  });
+        } else {
+          // no scanners matching this IP address
+          console.debug("No nearby devices found");
+
+          var thisDeviceInfo = {
+            "noDevicesFound": true,
+          };
+
+          addPlaceListing(thisDeviceInfo);
+        }
+      }, function(err) {
+        console.error("Failed to list scanners by IP address", err);
+      });
+    })
+    .fail(function() {
+      var failedToLocateSource = $("#failed-to-locate-template").html();
+      var failedToLocateTemplate = _.template(failedToLocateSource);
+      $("#place-list-container").append(failedToLocateTemplate());
+    });
 }
 
 function updatePlacesListeners() {
@@ -136,6 +162,9 @@ function updatePlacesListeners() {
       "scannerId": scannerId,
       "users": usersObject
     }).key;
+
+    firebase.database().ref("scanners/" + scannerId + "/placeId").set(newPlaceId);
+    firebase.database().ref("userPlaceMap/" + USER_ID + "/" + newPlaceId).set({"granted": firebase.database.ServerValue.TIMESTAMP});
 
     setManagedPlace(newPlaceId);
     initAuth(initSettingsFlow);
@@ -265,6 +294,8 @@ function watchDevices() {
 
         updateDeviceListeners();
       });
+    } else {
+      resetPlaceBeingManaged();
     }
   }, function() {
     // no such place exists (or we can't see it)
@@ -272,14 +303,14 @@ function watchDevices() {
     console.log("Invalid place - resetting state");
 
     if (place === null) {
-      firebase.database().ref("users/" + USER_ID).transaction(function(profile) {
-        profile["placeBeingManaged"] = 0;
-        return profile;
-      });
-
-      initAuth(initSettingsFlow);
+      resetPlaceBeingManaged();
     }
   });
+}
+
+function resetPlaceBeingManaged() {
+  firebase.database().ref("users/" + USER_ID + "/placeBeingManaged").set(0);
+  initAuth(initSettingsFlow);
 }
 
 function nameDevice(macAddress, newName) {
@@ -349,7 +380,7 @@ function initUI() {
 
 function cleanupListeners() {
   firebase.database().ref("devices").off();
-  firebase.database().ref("places").off();
+  firebase.database().ref("userPlaceMap").off();
 }
 
 function initSettingsFlow() {

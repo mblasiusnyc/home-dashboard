@@ -84,80 +84,79 @@
 
       <br><br>
 
-      <div id="place-list-container"></div>
+      <div id="place-list-container" class="row"></div>
     </script>
     <script id="place-list-template" type="text/template">
-      <% if (Object.keys(places).length === 0) { %>
+      <% if ( ! deviceInfo.deviceFound) { %>
         <!--
            * Three options:
            *
            * No device on the network of any kind - display instructions to set up a device
-           * Device on the network that's already in use - user can join Place
+           * Device on the network that's already in use - user must be granted access
            * Unclaimed device on the network - display UI to initialize it
         -->
 
-        <div class="row">
-          <div class="col-md-8 col-md-offset-2">
-        <% if (noDevicesReason.noDevicesFound) { %>
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h3 class="panel-title text-center">
-                You're not a member of any places yet!
-              </h3>
-            </div>
-            <div class="panel-body">
-              <p class="text-center">
-                Plug in a Homebase Scanner, then view this page on the same wifi network to set it up and start using Homebase.
-              </p>
-            </div>
-          </div>
-        <% } else if (noDevicesReason.claimedDeviceAvailable) { %>
-          <div class="panel panel-success">
-            <div class="panel-heading">
-              <h3 class="panel-title text-center">
-                There's a Homebase Scanner here!
-              </h3>
-            </div>
-            <div class="panel-body">
-              <p class="text-center">
-                Join <%= placeName %>
-              </p>
-            </div>
-          </div>
-        <% } else if (noDevicesReason.unclaimedDeviceAvailable) { %>
-          <div class="panel panel-success">
-            <div class="panel-heading">
-              <h3 class="panel-title text-center">
-                There's a new Homebase Scanner on your network!
-              </h3>
-            </div>
-            <div class="panel-body">
-              <p class="text-center">
-                <br>
-                <button class="btn btn-primary btn-lg setup-scanner-button" data-scanner-id="<%= noDevicesReason.deviceId %>">
-                  Get Started
-                </button>
-              </p>
-            </div>
-          </div>
-        <% } %>
-        </div>
-      </div>
-      <% } else { %>
-        <div class="row">
-          <% _.each(places, function(place, placeId) { %>
-            <div class="col-md-6">
+        <div class="col-md-6">
+          <% if (deviceInfo.noDevicesFound) { %>
             <div class="panel panel-default">
               <div class="panel-heading">
-                <h3 class="panel-title">
-                  <%= place.name %>
+                <h3 class="panel-title text-center">
+                  You're not a member of any places yet!
                 </h3>
               </div>
-              <div class="panel-body text-center">
-                <button class="btn btn-primary btn-lg manage-place-button" data-place-id="<%= placeId %>">Manage Location</button>
+              <div class="panel-body">
+                <p class="text-center">
+                  Plug in a Homebase Scanner, then view this page on the same wifi network to set it up and start using Homebase.
+                </p>
               </div>
             </div>
-          <% }); %>
+          <% } else if (deviceInfo.claimedDeviceAvailable) { %>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <h3 class="panel-title text-center">
+                  There's a Homebase Scanner nearby!
+                </h3>
+              </div>
+              <div class="panel-body">
+                <p class="text-center">
+                  Someone else here can give you access.
+                  <br><br>
+                  <button class="btn btn-primary disabled btn-inverse">
+                    Request Access (Coming Soon)
+                  </button>
+                </p>
+              </div>
+            </div>
+          <% } else if (deviceInfo.unclaimedDeviceAvailable) { %>
+            <div class="panel panel-success">
+              <div class="panel-heading">
+                <h3 class="panel-title text-center">
+                  There's a new Homebase Scanner on your network!
+                </h3>
+              </div>
+              <div class="panel-body">
+                <p class="text-center">
+                  <br>
+                  <button class="btn btn-primary btn-lg setup-scanner-button" data-scanner-id="<%= deviceInfo.deviceId %>">
+                    Get Started
+                  </button>
+                </p>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      <% } else { %>
+        <div class="col-md-6">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">
+                <%= deviceInfo.placeName %>
+              </h3>
+            </div>
+            <div class="panel-body text-center">
+              <button class="btn btn-primary btn-lg manage-place-button" data-place-id="<%= deviceInfo.placeId %>">Manage Location</button>
+            </div>
+          </div>
         </div>
       <% } %>
     </script>
