@@ -1,5 +1,6 @@
 USER_ID = null;
 USER_PROFILE = null;
+currentScannerId = null;
 
 listenedLocations = [];
 
@@ -271,8 +272,8 @@ function watchDevices() {
     place = snapshot.val();
 
     if (place) {
-      var scannerId = place.scannerId;
-      var devicePath = 'devices/' + scannerId;
+      currentScannerId = place.scannerId;
+      var devicePath = 'devices/' + currentScannerId;
       listenedLocations.push(devicePath);
 
       firebase.database().ref(devicePath).on('value', function(snapshot) {
@@ -332,8 +333,15 @@ function resetPlaceBeingManaged() {
   initAuth(initSettingsFlow);
 }
 
+function getDeviceRoot(macAddress) {
+  if (currentScannerId === null && typeof currentScannerId !== 'undefined') {
+    return null;
+  }
+  return "devices/" + currentScannerId + "/" + macAddress;
+}
+
 function nameDevice(macAddress, newName) {
-  deviceKey = "devices/" + USER_PROFILE["placeBeingManaged"] + macAddress
+  var deviceKey = getDeviceRoot(macAddress);
   newData = {
     friendlyName: newName
   };
@@ -341,7 +349,7 @@ function nameDevice(macAddress, newName) {
 }
 
 function hideDevice(macAddress) {
-  deviceKey = "devices/" + USER_PROFILE["placeBeingManaged"] + macAddress;
+  var deviceKey = getDeviceRoot(macAddress);
   newData = {
     hideInDashboard: true
   };
@@ -349,7 +357,7 @@ function hideDevice(macAddress) {
 }
 
 function showDevice(macAddress) {
-  deviceKey = "devices/" + USER_PROFILE["placeBeingManaged"] + macAddress;
+  var deviceKey = getDeviceRoot(macAddress);
   newData = {
     hideInDashboard: false
   };
