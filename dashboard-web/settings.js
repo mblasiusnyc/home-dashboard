@@ -333,7 +333,7 @@ function resetPlaceBeingManaged() {
 }
 
 function nameDevice(macAddress, newName) {
-  deviceKey = "devices/" + macAddress
+  deviceKey = "devices/" + USER_PROFILE["placeBeingManaged"] + macAddress
   newData = {
     friendlyName: newName
   };
@@ -341,7 +341,7 @@ function nameDevice(macAddress, newName) {
 }
 
 function hideDevice(macAddress) {
-  deviceKey = "devices/" + macAddress;
+  deviceKey = "devices/" + USER_PROFILE["placeBeingManaged"] + macAddress;
   newData = {
     hideInDashboard: true
   };
@@ -349,7 +349,7 @@ function hideDevice(macAddress) {
 }
 
 function showDevice(macAddress) {
-  deviceKey = "devices/" + macAddress;
+  deviceKey = "devices/" + USER_PROFILE["placeBeingManaged"] + macAddress;
   newData = {
     hideInDashboard: false
   };
