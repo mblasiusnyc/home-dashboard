@@ -45,7 +45,7 @@ function initApp() {
   let deviceConfigFile = "deviceConfig.json";
 
   if ( ! fs.existsSync(deviceConfigFile)) {
-    let deviceId = firebaseApp.database().ref("/scanners").push({"dateRegistered": firebaseApp.database.ServerValue.TIMESTAMP}).key;
+    let deviceId = firebaseApp.database().ref("/scanners").push({"dateRegistered": Date.now()}).key;
     console.log("new deviceId: ", deviceId);
 
     let deviceConfig = {
