@@ -1,3 +1,6 @@
+USER_ID = null;
+USER_PROFILE = null;
+
 /**
  * FIREBASE
  */
@@ -59,8 +62,12 @@ function searchDeviceCache(keyword) {
  */
 
 
+function getOccupantRoot() {
+  return 'occupants/' + USER_PROFILE["placeBeingManaged"];
+}
+
 function initOccupants() {
-  var occupantList = firebase.database().ref('occupants');
+  var occupantList = firebase.database().ref(getOccupantRoot());
 
   occupantList.on('value', function(snapshot) {
     var resultList = snapshot.val();
@@ -69,7 +76,7 @@ function initOccupants() {
 }
 
 function forceRefreshOccupants() {
-  var occupantList = firebase.database().ref('occupants');
+  var occupantList = firebase.database().ref(getOccupantRoot());
 
   occupantList.on('value', function(snapshot) {
     var resultList = snapshot.val();
@@ -130,10 +137,10 @@ function updateOccupantListeners() {
 
     if (newOccupantName) {
       var newOccupant = {
-        name: newOccupantName,
+        name: newOccupantName.trim(),
       }
 
-      firebasePush('occupants', newOccupant);
+      firebasePush(getOccupantRoot(), newOccupant);
     }
   });
 
@@ -145,10 +152,10 @@ function updateOccupantListeners() {
 
     if (newName) {
       var updatedOccupant = {
-        name: newName,
+        name: newName.trim(),
       }
 
-      firebaseUpdate('occupants/' + occupantId, updatedOccupant);
+      firebaseUpdate(getOccupantRoot() + "/" + occupantId, updatedOccupant);
     }
   });
 
@@ -159,7 +166,7 @@ function updateOccupantListeners() {
     var reallyRemove = confirm('Really remove ' + occupantName + '? There is no undo.');
 
     if (reallyRemove) {
-      firebase.database().ref().child('occupants/' + occupantId).remove();
+      firebase.database().ref().child(getOccupantRoot() + "/" + occupantId).remove();
     }
   });
 
@@ -193,7 +200,7 @@ function updateDeviceSearchListeners(occupantId) {
 }
 
 function updateDeviceForOccupant(occupantId, deviceId) {
-  firebaseUpdate('occupants/' + occupantId, {
+  firebaseUpdate(getOccupantRoot() + "/" + occupantId, {
     'deviceId': deviceId
   });
 }
@@ -202,24 +209,26 @@ function updateDeviceForOccupant(occupantId, deviceId) {
  * Iterate over the list of place we're allowed to see. For each one,
  */
 function watchDevices() {
-  var deviceList = firebase.database().ref('devices');
 
-  deviceList.on('value', function(snapshot) {
+  firebase.database().ref("places/" + USER_PROFILE["placeBeingManaged"]).once("value", function(snapshot) {
+    place = snapshot.val();
 
-    var deviceList = snapshot.val();
+    var devicePath = 'devices/' + place.scannerId;
+    firebase.database().ref(devicePath).on('value', function(snapshot) {
+      var deviceList = snapshot.val();
 
-    for (var macAddress in deviceList) {
-      if (deviceList.hasOwnProperty(macAddress)) {
-        var deviceInfo = deviceList[macAddress];
-        deviceInfo.macAddress = macAddress;
-        deviceInfo.rawLastSeen = deviceInfo.lastSeen;
-        deviceInfo.lastSeen = moment(deviceInfo.lastSeen).fromNow();
+      for (var macAddress in deviceList) {
+        if (deviceList.hasOwnProperty(macAddress)) {
+          var deviceInfo = deviceList[macAddress];
+          deviceInfo.macAddress = macAddress;
+          deviceInfo.rawLastSeen = deviceInfo.lastSeen;
+          deviceInfo.lastSeen = moment(deviceInfo.lastSeen).fromNow();
+        }
       }
-    }
 
-    deviceCache = deviceList;
-    forceRefreshOccupants();
-
+      deviceCache = deviceList;
+      forceRefreshOccupants();
+    });
   });
 }
 

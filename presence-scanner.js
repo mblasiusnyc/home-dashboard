@@ -65,6 +65,9 @@ function initApp() {
 
         firebaseApp.database().ref("scanners/" + deviceConfig.deviceId).transaction( (remoteDeviceConfig) => {
           if (remoteDeviceConfig) {
+            // TODO: extend remote device config onto local config generically
+            deviceConfig["placeId"] = remoteDeviceConfig.placeId;
+
             remoteDeviceConfig["ipAddress"] = bodyObject.ip.trim();
             return remoteDeviceConfig;
           }
@@ -187,7 +190,7 @@ function scanNetwork() {
       }
 
     }).then( () => {
-      occupantsRef = firebaseApp.database().ref('occupants');
+      occupantsRef = firebaseApp.database().ref('occupants/' + deviceConfig.placeId);
 
       occupantsRef.transaction( (occupants) => {
         if (occupants) {
