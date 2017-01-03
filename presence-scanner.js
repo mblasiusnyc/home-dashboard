@@ -41,7 +41,7 @@ function firebaseUpdate(key, value) {
 
 
 
-function initApp() {
+function initApp(callbackWhenDone) {
   let deviceConfigFile = "deviceConfig.json";
 
   if ( ! fs.existsSync(deviceConfigFile)) {
@@ -56,27 +56,25 @@ function initApp() {
   }
 
   deviceConfig = JSON.parse(fs.readFileSync(deviceConfigFile));
-  console.log("deviceConfig: ", deviceConfig);
 
   return request('GET', 'https://api.ipify.org?format=json')
     .then((res) => {
       if (res.statusCode == 200) {
         bodyObject = JSON.parse(res.body);
 
-        firebaseApp.database().ref("scanners/" + deviceConfig.deviceId).transaction( (remoteDeviceConfig) => {
-          if (remoteDeviceConfig) {
-            // TODO: extend remote device config onto local config generically
-            deviceConfig["placeId"] = remoteDeviceConfig.placeId;
+        let devicePath = "scanners/" + deviceConfig.deviceId;
 
-            remoteDeviceConfig["ipAddress"] = bodyObject.ip.trim();
-            return remoteDeviceConfig;
-          }
+        firebaseApp.database().ref(devicePath).child("ipAddress").update(bodyObject.ip.trim());
+        firebaseApp.database().ref(devicePath).once("value", () => {
+          // TODO: extend remote device config onto local config generically
+          deviceConfig["placeId"] = remoteDeviceConfig.placeId;
+          console.log("deviceConfig: ", deviceConfig);
+          callbackWhenDone();
         });
       } else {
         console.log("Failed to look up IP address", res.statusCode);
+        callbackWhenDone();
       }
-
-      return Promise.resolve();
     });
 }
 
@@ -253,8 +251,10 @@ function scanNetwork() {
   });
 }
 
-initFirebase();
-initApp().then( () => {
+function beginScanning() {
   setInterval(scanNetwork, 10000);
   scanNetwork();
-});
+}
+
+initFirebase();
+initApp(beginScanning);
