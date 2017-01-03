@@ -255,6 +255,10 @@ function scanNetwork() {
           }
 
           return occupants;
+
+        } else {
+          // seed the key with some dummy data. this is probably not best practice...
+          return { "initialized" : 1 }
         }
       })
     });
