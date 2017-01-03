@@ -204,7 +204,10 @@ function scanNetwork() {
         return;
       }
 
-      occupantsRef = firebaseApp.database().ref('occupants/' + deviceConfig.placeId);
+      let occupantsPath = 'occupants/' + deviceConfig.placeId;
+      console.log("Processing occupants at", occupantsPath);
+
+      occupantsRef = firebaseApp.database().ref(occupantsPath);
       occupantsRef.transaction( (occupants) => {
         if (occupants) {
 
