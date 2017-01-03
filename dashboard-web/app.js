@@ -198,6 +198,9 @@ function updateDeviceForOccupant(occupantId, deviceId) {
   });
 }
 
+/**
+ * Iterate over the list of place we're allowed to see. For each one,
+ */
 function watchDevices() {
   var deviceList = firebase.database().ref('devices');
 
@@ -225,10 +228,24 @@ function watchDevices() {
  * AUTHENTICATION
  */
 
-function initAuth() {
+function initAuth(callbackWhenLoggedin) {
   firebase.auth().onAuthStateChanged(function(user) {
     if ( ! user) {
       window.location.href="/login.html";
+    } else {
+      USER_ID = user.uid;
+
+      firebase.database().ref("users").child(USER_ID).once("value", function(snapshot) {
+        USER_PROFILE = snapshot.val();
+
+        // check for malformed data... we can't do much if we don't have userdata
+        if (USER_PROFILE === null) {
+          firebase.auth().signOut();
+          return;
+        }
+
+        callbackWhenLoggedin();
+      });
     }
   });
 }
@@ -246,6 +263,18 @@ function initUI() {
   });
 }
 
+function sendToSettingsForPlaceSelection() {
+  window.location.href = "/settings.html#dashboard-no-place";
+}
+
+function initDashboard() {
+  if (typeof USER_PROFILE.placeBeingManaged !== "undefined" && USER_PROFILE.placeBeingManaged) {
+    watchDevices();
+  } else {
+    sendToSettingsForPlaceSelection();
+  }
+}
+
 
 /**
  * INITIALIZATION - WHERE EVERYTHING STARTS
@@ -258,6 +287,5 @@ function updateListeners() {
 }
 
 initFirebase();
-initAuth();
+initAuth(initDashboard);
 initUI();
-watchDevices();

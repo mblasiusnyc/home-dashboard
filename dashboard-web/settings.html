@@ -72,15 +72,30 @@
     <!-- HANDLEBARS TEMPLATES -->
 
     <script id="select-place-template" type="text/template">
-      <div class="page-header clearfix">
-        <h2>
-          Manage Locations
-        </h2>
-      </div>
+      <% if (explanationForSelection === "dashboard-no-place") { %>
+        <div class="panel panel-info">
+          <div class="panel-heading text-center">
+            <h3 class="panel-title">
+              You haven't chosen a location yet.
+            </h3>
+          </div>
+          <div class="panel-body">
+            <p class="text-center text-info">
+              Choose a location (or set up a new one) so you can see who's home and who isn't.
+            </p>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="page-header clearfix">
+          <h2>
+            Manage Locations
+          </h2>
+        </div>
 
-      <p class="lead">
-        A location is somewhere like <i>Home</i>, <i>Work</i>, or <i>My Evil Lair</i> &mdash; a place with its own wifi network.
-      </p>
+        <p class="lead">
+          A location is somewhere like <i>Home</i>, <i>Work</i>, or <i>My Evil Lair</i> &mdash; a place with its own wifi network.
+        </p>
+      <% } %>
 
       <br><br>
 
@@ -154,7 +169,7 @@
               </h3>
             </div>
             <div class="panel-body text-center">
-              <button class="btn btn-primary btn-lg manage-place-button" data-place-id="<%= deviceInfo.placeId %>">Manage Location</button>
+              <button class="btn btn-primary btn-lg manage-place-button" data-place-id="<%= deviceInfo.placeId %>">Use This Location</button>
             </div>
           </div>
         </div>

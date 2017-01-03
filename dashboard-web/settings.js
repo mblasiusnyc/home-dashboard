@@ -52,11 +52,24 @@ function addPlaceListing(deviceInfo, prepend) {
   updatePlacesListeners();
 }
 
-function showSelectPlaceFlow() {
-  // build page structure
+function getExplanationForSelection() {
+  if (window.location.hash.length > 0) {
+      return window.location.hash.substr(1);
+  }
+  return null;
+}
+
+function initManageLocationsFlow() {
+  // did another page send us here to select a location?
+  var explanationForSelection = getExplanationForSelection();
+
   var templateSource = $("#select-place-template").html();
   var placeTemplate = _.template(templateSource);
-  $("#content").html(placeTemplate());
+  $("#content").html(placeTemplate({ explanationForSelection: explanationForSelection }));
+}
+
+function showSelectPlaceFlow() {
+  initManageLocationsFlow();
 
   // list places we're allowed to see
   listenedLocations.push("userPlaceMap");
@@ -417,10 +430,16 @@ function initSettingsFlow() {
   cleanupListeners();
 
   if (typeof USER_PROFILE.placeBeingManaged !== "undefined" && USER_PROFILE.placeBeingManaged) {
-    console.log("watchDevices()");
-    watchDevices();
+    var explanationForSelection = getExplanationForSelection();
+
+    if (explanationForSelection !== null) {
+      if (explanationForSelection === "dashboard-no-place") {
+        window.location.href = "/index.html";
+      }
+    } else {
+      watchDevices();
+    }
   } else {
-    console.log("showSelectPlaceFlow()");
     showSelectPlaceFlow();
   }
 }
