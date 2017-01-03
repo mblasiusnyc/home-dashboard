@@ -67,10 +67,14 @@ function initApp(callbackWhenDone) {
         bodyObject = JSON.parse(res.body);
 
         let devicePath = "scanners/" + deviceConfig.deviceId;
+        let newIpAddress = bodyObject.ip.trim();
+        console.log("devicePath=", devicePath, newIpAddress);
 
-        firebaseApp.database().ref(devicePath).child("ipAddress").update(bodyObject.ip.trim()).then( () => {
+        firebaseApp.database().ref(devicePath).child("ipAddress").set(newIpAddress).then( () => {
           console.log("Updated ipAddress. Now loading remote config");
-          firebaseApp.database().ref(devicePath).once("value", () => {
+          firebaseApp.database().ref(devicePath).once("value", (remoteConfigSnapshot) => {
+            let remoteDeviceConfig = remoteConfigSnapshot.val();
+
             // TODO: extend remote device config onto local config generically
             deviceConfig["placeId"] = remoteDeviceConfig.placeId;
             console.log("deviceConfig: ", deviceConfig);
