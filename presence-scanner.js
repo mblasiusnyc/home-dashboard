@@ -162,12 +162,12 @@ function scanNetwork() {
     /**
      * Check all our known devices, doing housekeeping & creating events
      */
-    var devicesRef = firebaseApp.database().ref('devices').child(deviceConfig.deviceId);
+    let devicesRef = firebaseApp.database().ref('devices/' + deviceConfig.deviceId);
     devicesRef.transaction( (deviceListInFirebase) => {
       if (deviceListInFirebase) {
 
         // iterate over list of updated devices, then commit those updates
-        for (var deviceFirebaseKey in newDeviceData) {
+        for (let deviceFirebaseKey in newDeviceData) {
           // merge if already exists
           if (deviceListInFirebase.hasOwnProperty(deviceFirebaseKey)) {
             Object.assign(deviceListInFirebase[deviceFirebaseKey], newDeviceData[deviceFirebaseKey]);
@@ -190,8 +190,13 @@ function scanNetwork() {
       }
 
     }).then( () => {
-      occupantsRef = firebaseApp.database().ref('occupants/' + deviceConfig.placeId);
 
+      if ( ! deviceConfig.placeId) {
+        console.log("This scanner isn't associated with a Place yet; no occupants to process.");
+        return;
+      }
+
+      occupantsRef = firebaseApp.database().ref('occupants/' + deviceConfig.placeId);
       occupantsRef.transaction( (occupants) => {
         if (occupants) {
 
