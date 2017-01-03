@@ -42,6 +42,10 @@ function firebaseUpdate(key, value) {
 
 
 function initApp(callbackWhenDone) {
+  if (typeof callbackWhenDone !== "function") {
+    console.log("Warning: no callback function passed to initApp()");
+  }
+
   let deviceConfigFile = "deviceConfig.json";
 
   if ( ! fs.existsSync(deviceConfigFile)) {
@@ -57,19 +61,21 @@ function initApp(callbackWhenDone) {
 
   deviceConfig = JSON.parse(fs.readFileSync(deviceConfigFile));
 
-  return request('GET', 'https://api.ipify.org?format=json')
+  request('GET', 'https://api.ipify.org?format=json')
     .then((res) => {
       if (res.statusCode == 200) {
         bodyObject = JSON.parse(res.body);
 
         let devicePath = "scanners/" + deviceConfig.deviceId;
 
-        firebaseApp.database().ref(devicePath).child("ipAddress").update(bodyObject.ip.trim());
-        firebaseApp.database().ref(devicePath).once("value", () => {
-          // TODO: extend remote device config onto local config generically
-          deviceConfig["placeId"] = remoteDeviceConfig.placeId;
-          console.log("deviceConfig: ", deviceConfig);
-          callbackWhenDone();
+        firebaseApp.database().ref(devicePath).child("ipAddress").update(bodyObject.ip.trim()).then( () => {
+          console.log("Updated ipAddress. Now loading remote config");
+          firebaseApp.database().ref(devicePath).once("value", () => {
+            // TODO: extend remote device config onto local config generically
+            deviceConfig["placeId"] = remoteDeviceConfig.placeId;
+            console.log("deviceConfig: ", deviceConfig);
+            callbackWhenDone();
+          });
         });
       } else {
         console.log("Failed to look up IP address", res.statusCode);
