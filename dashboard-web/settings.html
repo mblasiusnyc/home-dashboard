@@ -175,7 +175,7 @@
         </div>
       <% } %>
     </script>
-    <script id="failed-to-locate-template" type="text/x-handlebars-template">
+    <script id="failed-to-locate-template" type="text/template">
       <div class="col-md-6">
         <div class="panel panel-warning">
           <div class="panel-heading text-center">
@@ -192,7 +192,7 @@
         </div>
       </div>
     </script>
-    <script id="manage-device-template" type="text/x-handlebars-template">
+    <script id="manage-device-template" type="text/template">
       <div class="page-header">
         <h1 class="text-center">
           <%= placeName %>
@@ -208,8 +208,24 @@
       <br>
 
       <h3>
-        Active Devices
+        People
       </h3>
+
+      <p class="lead">
+        These people can manage <u><%= placeName %></u>, and can be associated with a
+        device to track when they're home.
+      </p>
+
+      <br>
+
+      <div id="people-container" class="clearfix"></div>
+
+      <div class="clearfix">
+        <br><br>
+        <h3>
+          Active Devices
+        </h3>
+      </div>
 
       <p class="lead">
         These devices will be continously monitored and can be associated with
@@ -221,7 +237,7 @@
       <div id="shown-device-container" class="clearfix"></div>
 
       <div class="clearfix">
-      <br><br>
+        <br><br>
         <h3>
           Hidden Devices
         </h3>
@@ -270,6 +286,20 @@
           </div>
         </div>
       {{/each}}
+    </script>
+    <script id="placemanager-profile-template" type="text/template">
+      <% _.each(users, function(user, userId) { %>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-body">
+              <b><%= user.emailAddress %></b>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+      <div class="col-md-4">
+        <button type="button" class="btn btn-primary" aria-label="Add Person"><span class="glyphicon glyphicon-plus"></span> Add Person</button>
+      </div>
     </script>
   </body>
 </html>

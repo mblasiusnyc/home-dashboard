@@ -278,7 +278,34 @@ function updateDeviceListeners() {
   });
 }
 
-function watchDevices() {
+function watchPlaceManagers() {
+  var placeManagers = null;
+
+  firebase.database().ref("places/" + USER_PROFILE["placeBeingManaged"]).child("users").on("value", function(userIdListSnapshot) {
+    var userIdList = userIdListSnapshot.val();
+
+    if (userIdList) {
+      var managers = [];
+
+      _.each(userIdList, function(value, userId) {
+        firebase.database().ref("users").child(userId).once("value", function(userDataSnapshot) {
+          var userData = userDataSnapshot.val();
+
+          if (userData) {
+            managers.push(userData);
+          }
+        });
+      });
+
+      // populate list of users who can manage this place
+      var managerTemplateSource = $("#placemanager-profile-template").html();
+      var managerTemplate = _.template(managerTemplateSource);
+      $("#people-container").html(managerTemplate({"users": managers}));
+    }
+  });
+}
+
+function watchPlaces() {
   var place = null;
 
   firebase.database().ref("places/" + USER_PROFILE["placeBeingManaged"]).once("value", function(snapshot) {
@@ -326,6 +353,7 @@ function watchDevices() {
         $("#hidden-device-container").html(shownTemplate({"devices": hiddenDevices}));
 
         updateDeviceListeners();
+        watchPlaceManagers();
       });
     } else {
       resetPlaceBeingManaged();
@@ -437,7 +465,7 @@ function initSettingsFlow() {
         window.location.href = "/index.html";
       }
     } else {
-      watchDevices();
+      watchPlaces();
     }
   } else {
     showSelectPlaceFlow();
