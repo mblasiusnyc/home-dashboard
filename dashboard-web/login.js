@@ -38,32 +38,50 @@ function initAuth() {
   });
 }
 
+function userIsInitialized(userData) {
+  var requiredFields = [
+    "emailAddress",
+    "placeBeingManaged"
+  ];
+
+  for (var i = requiredFields.length - 1; i >= 0; i--) {
+    if ( ! userData.hasOwnProperty(requiredFields[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function prepareUserdataOrLogin(user) {
-  // prevent a TON of callbacks being executed after initializing the user object once
   if (USER_INITIALIZED) {
     window.location.href="/";
     return;
   }
 
   var userDataRef = firebase.database().ref("users").child(user.uid);
-
   userDataRef.transaction(function(userData) {
     // initialize our userData object if necessary
     if (userData === null || ! userData) {
       console.debug("userdata is null, initializing it");
       userData = {};
+    } else if (userIsInitialized(userData)) {
+      USER_INITIALIZED = true;
+      return;
+    }
+
+    if ( ! userData.hasOwnProperty("emailAddress")) {
+      var fullUser = firebase.auth().currentUser;
+      if (fullUser) {
+        userData["emailAddress"] = fullUser.email;
+      }
     }
 
     if ( ! userData.hasOwnProperty("placeBeingManaged")) {
       userData["placeBeingManaged"] = 0;
-      USER_INITIALIZED = true;
-      return userData;
-    } else {
-      console.debug("User is good, logging in");
-      window.location.href="/";
     }
 
-    return;
+    return userData;
   }, function() {
     prepareUserdataOrLogin(user);
   });
