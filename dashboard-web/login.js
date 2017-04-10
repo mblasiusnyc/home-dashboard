@@ -1,10 +1,12 @@
 // TODO: add require.js to abstract firebase config object into one file to be referenced later
 // firebaseConfig = require('../firebaseConfig')
 firebaseConfig = {
-  "apiKey": "AIzaSyDEHc7ws4S0JeV2HuDvMMjTFqbO-TDkgd8",
-  "authDomain": "home-dashboard-9604a.firebaseapp.com",
-  "databaseURL": "https://home-dashboard-9604a.firebaseio.com",
-  "storageBucket": "home-dashboard-9604a.appspot.com"
+	apiKey: "AIzaSyBh-en3ZPT-7XdnKV04Wj1dDvhAjj2QrU0",
+	authDomain: "blasius-home-dashboard.firebaseapp.com",
+	databaseURL: "https://blasius-home-dashboard.firebaseio.com",
+	projectId: "blasius-home-dashboard",
+	storageBucket: "blasius-home-dashboard.appspot.com",
+	messagingSenderId: "195191365195"
 }
 
 USER_INITIALIZED = false;
@@ -33,6 +35,7 @@ function firebasePush(parentKey, value) {
 
 
 function initAuth() {
+	debugger;
   // if we're logged in, skip this page
   firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
@@ -58,7 +61,7 @@ function userIsInitialized(userData) {
 
 function prepareUserdataOrLogin(user) {
   if (USER_INITIALIZED) {
-    window.location.href="/";
+    window.location.href="./";
     return;
   }
 
