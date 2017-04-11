@@ -278,8 +278,8 @@ function initUI() {
 }
 
 function sendToSettingsForPlaceSelection() {
-  window.location.href="./login.html"
-window.location.href = "./settings.html#dashboard-no-place";
+	window.location.href = "./login.html"
+	window.location.href = "./settings.html#dashboard-no-place";
 }
 
 function initDashboard() {

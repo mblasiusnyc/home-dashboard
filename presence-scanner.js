@@ -20,8 +20,8 @@ FIREBASE_NAMESPACE = 'devices';
 function initFirebase() {
   var serviceAccount = require("./service-account-creds.json");
 
-  var dbURL = "https://home-dashboard-9604a.firebaseio.com";
-  // var dbURL = "https://homebase-dev.firebaseio.com";
+  // TODO: EXTRACT THIS INTO FIREBASE CONFIG FILE
+  var dbURL = "https://blasius-home-dashboard.firebaseio.com";
 
   var firebaseConfig = {
     credential: FirebaseAdmin.credential.cert(serviceAccount),
@@ -76,8 +76,8 @@ function initApp(callbackWhenDone) {
             let remoteDeviceConfig = remoteConfigSnapshot.val();
 
             // TODO: extend remote device config onto local config generically
+            console.log("remoteDeviceConfig: ", remoteDeviceConfig);
             deviceConfig["placeId"] = remoteDeviceConfig.placeId;
-            console.log("deviceConfig: ", deviceConfig);
             callbackWhenDone();
           });
         });
@@ -150,6 +150,7 @@ function scanNetwork() {
 
   exec(cmd, function(error, stdout, stderr) {
     var outputLines = stdout.split('\n');
+    console.log("outputLines: ",outputLines)
 
     for (var i = outputLines.length - 1; i >= 0; i--) {
       var macMatch = outputLines[i].match(macRegex);
