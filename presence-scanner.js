@@ -199,7 +199,6 @@ function scanNetwork() {
       }
 
     }).then( () => {
-
       if ( ! deviceConfig.placeId) {
         console.log("This scanner isn't associated with a Place yet; no occupants to process.");
         return;

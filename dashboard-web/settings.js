@@ -81,7 +81,6 @@ function showSelectPlaceFlow() {
   firebase.database().ref("userPlaceMap").child(USER_ID).on("value", function(placesSnapshot) {
     var placeList = placesSnapshot.val();
     var devicesFoundCount = 0;
-
     if (placeList) {
       _.each(placeList, function(place, placeId) {
         console.debug("looking up ", "places/" + placeId);
@@ -104,10 +103,10 @@ function showSelectPlaceFlow() {
             devicesFoundCount++;
           }
 
-          findLocalScanners(devicesFoundCount);
         });
       });
     }
+    findLocalScanners(devicesFoundCount);
 
   }, function(err) {
     console.error("Failed to look up userPlaceMap", err);
@@ -126,7 +125,6 @@ function findLocalScanners(numDevicesFound) {
   $.getJSON("//api.ipify.org?format=json")
     .done(function(result) {
       var ipAddress = result.ip.trim();
-
       // look up scanners with the same IP address
       firebase.database().ref("scanners").orderByChild("ipAddress").equalTo(ipAddress).once("value", function(scannerSnapshot) {
         var nearbyScanners = scannerSnapshot.val();
@@ -431,7 +429,6 @@ function initAuth(callbackWhenLoggedin) {
           firebase.auth().signOut();
           return;
         }
-
         callbackWhenLoggedin();
       });
     }
@@ -461,14 +458,13 @@ function cleanupListeners() {
 
 function initSettingsFlow() {
   cleanupListeners();
-
   if (typeof USER_PROFILE.placeBeingManaged !== "undefined" && USER_PROFILE.placeBeingManaged) {
     var explanationForSelection = getExplanationForSelection();
 
     if (explanationForSelection !== null) {
       if (explanationForSelection === "dashboard-no-place") {
         window.location.href="./login.html"
-window.location.href = "./index.html";
+				window.location.href = "./index.html";
       }
     } else {
       watchPlaces();
